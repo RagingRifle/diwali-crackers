@@ -2937,19 +2937,33 @@ table.admin-table tr:hover {
    PRINT MEDIA QUERY FOR CLEAN INVOICE PRINT / PDF
 ═══════════════════════════════════════════════════════════════ */
 @media print {
-  body * {
-    visibility: hidden;
+  .no-print,
+  .app-layout,
+  header,
+  nav,
+  main,
+  footer {
+    display: none !important;
   }
 
-  .no-print {
-    display: none !important;
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    background: #fff !important;
   }
 
   .invoice-modal-overlay {
     position: static !important;
     background: none !important;
     padding: 0 !important;
+    margin: 0 !important;
     display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
   }
 
   .invoice-modal-content {
@@ -2960,21 +2974,16 @@ table.admin-table tr:hover {
     box-shadow: none !important;
     width: 100% !important;
     max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
     background: #fff !important;
   }
 
-  .invoice-printable-area,
-  .invoice-printable-area * {
-    visibility: visible !important;
-  }
-
   .invoice-printable-area {
-    position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
-    width: 100% !important;
+    position: static !important;
     padding: 0 !important;
-    margin: 0 !important;
+    margin: 0 auto !important;
+    width: 100% !important;
     background: #fff !important;
   }
 
@@ -2982,13 +2991,14 @@ table.admin-table tr:hover {
     border: none !important;
     box-shadow: none !important;
     padding: 0 !important;
+    margin: 0 auto !important;
     width: 100% !important;
-    max-width: 100% !important;
+    max-width: 760px !important;
   }
 
   @page {
-    size: A4;
-    margin: 12mm 15mm;
+    size: A4 portrait;
+    margin: 8mm 10mm;
   }
 }
 
