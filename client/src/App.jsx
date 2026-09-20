@@ -14,7 +14,7 @@ import { Search, Flame } from 'lucide-react';
 import HomePage from './components/HomePage';
 
 export default function App() {
-  const [currentView, setCurrentView] = useState('shop');
+  const [currentView, setCurrentView] = useState('home');
   const [products, setProducts] = useState([]);
   const [categoryMeta, setCategoryMeta] = useState([]); // [{category, count}]
   const [loadingProducts, setLoadingProducts] = useState(true);
@@ -152,7 +152,13 @@ export default function App() {
 
       <main style={{ flex: 1 }}>
         {currentView === 'home' && (
-          <HomePage setCurrentView={setCurrentView} />
+          <HomePage
+            setCurrentView={setCurrentView}
+            onSelectCategory={(cat) => {
+              setSelectedCategory(cat);
+              setSearchQuery('');
+            }}
+          />
         )}
         {currentView === 'shop' && (
           <>

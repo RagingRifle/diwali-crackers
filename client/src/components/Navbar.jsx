@@ -25,7 +25,7 @@ export default function Navbar({
       <nav className="main-navbar">
         <div className="nav-container">
           {/* Brand Logo */}
-          <div className="brand-logo" onClick={() => setCurrentView('shop')}>
+          <div className="brand-logo" onClick={() => setCurrentView('home')}>
             <div className="brand-icon">
               🪔
             </div>
