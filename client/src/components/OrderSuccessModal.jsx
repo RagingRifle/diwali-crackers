@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import confetti from 'canvas-confetti';
-import { CheckCircle2, Copy, Check, Truck, ShoppingBag } from 'lucide-react';
+import { CheckCircle2, Copy, Check, Truck, ShoppingBag, FileText } from 'lucide-react';
 
 export default function OrderSuccessModal({
   orderData,
   onClose,
   onTrackOrder,
-  onContinueShopping
+  onContinueShopping,
+  onOpenInvoice
 }) {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    // Fire festive fireworks celebration
     try {
       confetti({
         particleCount: 80,
@@ -19,18 +19,18 @@ export default function OrderSuccessModal({
         origin: { y: 0.6 },
         colors: ['#D32F2F', '#FFD700', '#FF5722', '#FFFFFF', '#4CAF50']
       });
-    } catch (e) {
-      console.log('Confetti effect');
-    }
+    } catch (e) {}
   }, []);
 
   if (!orderData) return null;
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(orderData.orderId);
+    navigator.clipboard.writeText(orderData.orderId || orderData.id);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  const currentOrderId = orderData.orderId || orderData.id;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -42,12 +42,12 @@ export default function OrderSuccessModal({
 
           <h2 className="success-title">Order Placed Successfully!</h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.92rem' }}>
-            Thank you, <strong>{orderData.customerName}</strong>! Your festive crackers order has been received and scheduled for packaging.
+            Thank you, <strong>{orderData.customerName || orderData.customer_name}</strong>! Your festive crackers order has been received and scheduled for packaging.
           </p>
 
           <div className="order-badge-container">
             <div className="order-badge-label">Your Unique Order Tracking ID</div>
-            <div className="order-badge-id">{orderData.orderId}</div>
+            <div className="order-badge-id">{currentOrderId}</div>
             <button
               onClick={handleCopy}
               style={{
@@ -70,17 +70,44 @@ export default function OrderSuccessModal({
             </button>
           </div>
 
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
-            📱 You can track this order anytime using your mobile number <strong>{orderData.phone}</strong> or Order ID <strong>{orderData.orderId}</strong>.
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
+            📱 You can track this order anytime using your mobile number <strong>{orderData.phone}</strong> or Order ID <strong>{currentOrderId}</strong>.
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {/* Download / Print Bill Button */}
+            {onOpenInvoice && (
+              <button
+                style={{
+                  background: '#dcfce7',
+                  border: '1.5px solid #86efac',
+                  color: '#15803d',
+                  padding: '0.75rem',
+                  borderRadius: 'var(--radius-md)',
+                  fontSize: '0.95rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  transition: 'all 0.15s ease'
+                }}
+                onClick={() => {
+                  onOpenInvoice(orderData);
+                }}
+              >
+                <FileText size={18} />
+                <span>Download &amp; Print Bill / Invoice</span>
+              </button>
+            )}
+
             <button
               className="btn-submit-order"
               style={{ margin: 0 }}
               onClick={() => {
                 onClose();
-                onTrackOrder(orderData.orderId);
+                onTrackOrder(currentOrderId);
               }}
             >
               <Truck size={18} />

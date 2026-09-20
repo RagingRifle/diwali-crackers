@@ -1,6 +1,7 @@
 import React from 'react';
 
 const CATEGORY_ICONS = {
+  'Combo Bundles': '🎁',
   'Sparklers': '✨',
   'Flowerpots': '🌺',
   'Ground Chakkars': '🌀',
@@ -17,6 +18,7 @@ const CATEGORY_ICONS = {
 };
 
 const FEATURED_CATEGORIES = [
+  'Combo Bundles',
   'Sparklers',
   'Flowerpots',
   'Ground Chakkars',

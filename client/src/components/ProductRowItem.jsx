@@ -1,13 +1,27 @@
-import React from 'react';
-import { ShoppingCart, Plus, Minus } from 'lucide-react';
+import React, { useState } from 'react';
+import { ShoppingCart, Plus, Minus, Layers, ChevronDown, ChevronUp } from 'lucide-react';
 
 export default function ProductRowItem({ product, cartItem, onAddToCart, onUpdateQuantity }) {
-  const discountPct = product.mrp > product.price
+  const [showComboItems, setShowComboItems] = useState(false);
+
+  const discountPct = product.discount_percent || (product.mrp > product.price
     ? Math.round(((product.mrp - product.price) / product.mrp) * 100)
-    : 0;
+    : 0);
 
   const lineTotal = cartItem ? (product.price * cartItem.quantity).toFixed(0) : product.price.toFixed(0);
   const isOutOfStock = product.in_stock === 0;
+  const isCombo = product.is_combo === 1 || product.category === 'Combo Bundles';
+
+  let comboItems = [];
+  if (isCombo && product.combo_items) {
+    try {
+      comboItems = typeof product.combo_items === 'string'
+        ? JSON.parse(product.combo_items)
+        : product.combo_items;
+    } catch (e) {
+      comboItems = [];
+    }
+  }
 
   // Resolve image: check for /products/{code}.ext, else use image field, else blank
   const imgSrc = product.code
@@ -15,32 +29,101 @@ export default function ProductRowItem({ product, cartItem, onAddToCart, onUpdat
     : (product.image || '');
 
   return (
-    <div className={`product-row ${isOutOfStock ? 'product-row--oos' : ''}`}>
+    <div className={`product-row ${isOutOfStock ? 'product-row--oos' : ''} ${isCombo ? 'product-row--combo' : ''}`}>
       {/* Thumbnail */}
       <div className="product-row__img">
-        <img
-          src={imgSrc}
-          alt={product.name}
-          loading="lazy"
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.style.display = 'none';
-            // Show code badge as fallback
-            const badge = e.target.parentElement.querySelector('.img-fallback-badge');
-            if (!badge) {
-              const div = document.createElement('div');
-              div.className = 'img-fallback-badge';
-              div.textContent = product.code || '?';
-              e.target.parentElement.appendChild(div);
-            }
-          }}
-        />
+        {isCombo ? (
+          <div className="img-combo-badge">🎁</div>
+        ) : (
+          <img
+            src={imgSrc}
+            alt={product.name}
+            loading="lazy"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.style.display = 'none';
+              const badge = e.target.parentElement.querySelector('.img-fallback-badge');
+              if (!badge) {
+                const div = document.createElement('div');
+                div.className = 'img-fallback-badge';
+                div.textContent = product.code || '?';
+                e.target.parentElement.appendChild(div);
+              }
+            }}
+          />
+        )}
       </div>
 
       {/* Info */}
       <div className="product-row__info">
-        <p className="product-row__name">{product.name}</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+          {isCombo && (
+            <span style={{
+              background: '#b91c1c',
+              color: '#fff',
+              fontSize: '0.65rem',
+              fontWeight: 800,
+              padding: '0.1rem 0.4rem',
+              borderRadius: '4px',
+              letterSpacing: '0.04em'
+            }}>
+              🎁 COMBO BUNDLE
+            </span>
+          )}
+          {product.code && (
+            <span style={{ fontSize: '0.72rem', fontFamily: 'monospace', fontWeight: 700, color: 'var(--primary-red)' }}>
+              [{product.code}]
+            </span>
+          )}
+          <span className="product-row__name">{product.name}</span>
+        </div>
+
         <p className="product-row__pack">{product.content || product.pack_size || '1 Box'}</p>
+
+        {/* If Combo, show expandable contents */}
+        {isCombo && comboItems.length > 0 && (
+          <div style={{ margin: '0.2rem 0 0.35rem' }}>
+            <button
+              type="button"
+              onClick={() => setShowComboItems(!showComboItems)}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#b91c1c',
+                fontSize: '0.72rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                padding: 0,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.2rem'
+              }}
+            >
+              <span>{showComboItems ? 'Hide Items Inside' : `View ${comboItems.length} Items Included`}</span>
+              {showComboItems ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+            </button>
+
+            {showComboItems && (
+              <div style={{
+                marginTop: '0.35rem',
+                background: '#fffbeb',
+                border: '1px solid #fef3c7',
+                borderRadius: '6px',
+                padding: '0.4rem 0.6rem',
+                fontSize: '0.75rem',
+                color: '#4b5563'
+              }}>
+                {comboItems.map((ci, idx) => (
+                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '1px 0' }}>
+                    <span>• {ci.quantity}x {ci.name}</span>
+                    <span style={{ color: '#9ca3af' }}>MRP: ₹{ci.mrp * ci.quantity}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="product-row__pricing">
           {product.mrp > product.price && (
             <span className="product-row__mrp">₹{product.mrp.toFixed(0)}</span>

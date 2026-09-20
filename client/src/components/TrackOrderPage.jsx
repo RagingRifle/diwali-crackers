@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Truck, Package, CheckCircle, Clock, MapPin, Phone, AlertCircle, Calendar } from 'lucide-react';
+import { Search, Truck, Package, CheckCircle, Clock, MapPin, Phone, AlertCircle, Calendar, FileText } from 'lucide-react';
 
 const ORDER_STEPS = [
   { key: 'Pending', label: 'Order Placed', icon: Clock },
@@ -9,7 +9,7 @@ const ORDER_STEPS = [
   { key: 'Delivered', label: 'Delivered', icon: CheckCircle }
 ];
 
-export default function TrackOrderPage({ initialSearchQuery = '' }) {
+export default function TrackOrderPage({ initialSearchQuery = '', onOpenInvoice }) {
   const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState([]);
@@ -162,13 +162,24 @@ export default function TrackOrderPage({ initialSearchQuery = '' }) {
                 </p>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
                 <span className={`status-pill ${statusClass}`}>
                   ● {order.status}
                 </span>
                 <span style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--primary-red)' }}>
                   ₹{order.total_amount}
                 </span>
+                {onOpenInvoice && (
+                  <button
+                    className="btn-action"
+                    style={{ background: '#dcfce7', color: '#15803d', borderColor: '#86efac', fontWeight: 700, padding: '0.35rem 0.75rem' }}
+                    onClick={() => onOpenInvoice(order)}
+                    title="Download / Print Bill"
+                  >
+                    <FileText size={14} />
+                    <span>Download Bill</span>
+                  </button>
+                )}
               </div>
             </div>
 

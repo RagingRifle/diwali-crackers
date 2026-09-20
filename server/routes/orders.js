@@ -42,12 +42,16 @@ router.post('/', async (req, res) => {
     for (const item of items) {
       const qty = parseInt(item.quantity, 10) || 1;
       const price = parseFloat(item.price) || 0;
+      const mrp = parseFloat(item.mrp) || price;
       const subtotal = price * qty;
       totalAmount += subtotal;
 
       validatedItems.push({
         product_id: item.id || null,
-        product_name: item.name || 'Cracker Item',
+        product_code: item.code || item.product_code || '',
+        product_name: item.name || item.product_name || 'Cracker Item',
+        content: item.content || item.pack_size || '',
+        mrp,
         price,
         quantity: qty,
         subtotal
@@ -97,19 +101,54 @@ router.post('/', async (req, res) => {
     // Insert order items
     for (const item of validatedItems) {
       db.run(`
-        INSERT INTO order_items (order_id, product_id, product_name, price, quantity, subtotal)
-        VALUES (?, ?, ?, ?, ?, ?)
-      `, [orderId, item.product_id, item.product_name, item.price, item.quantity, item.subtotal]);
+        INSERT INTO order_items (order_id, product_id, product_code, product_name, content, mrp, price, quantity, subtotal)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `, [
+        orderId,
+        item.product_id,
+        item.product_code,
+        item.product_name,
+        item.content,
+        item.mrp,
+        item.price,
+        item.quantity,
+        item.subtotal
+      ]);
     }
 
     db.save();
+
+    const fullOrder = {
+      id: orderId,
+      customer_name: customer_name.trim(),
+      phone: phone.trim(),
+      email: email ? email.trim() : '',
+      address: address.trim(),
+      city: city.trim(),
+      pincode: pincode.trim(),
+      notes: notes ? notes.trim() : '',
+      total_amount: totalAmount,
+      status: 'Pending',
+      courier_name: '',
+      tracking_number: '',
+      created_at: now,
+      items: validatedItems,
+      status_updates: [
+        {
+          status: 'Pending',
+          timestamp: now,
+          note: 'Order submitted successfully and received by our festive dispatch team.'
+        }
+      ]
+    };
 
     res.status(201).json({
       success: true,
       message: 'Order placed successfully!',
       orderId,
       totalAmount,
-      customerName: customer_name
+      customerName: customer_name,
+      order: fullOrder
     });
   } catch (err) {
     console.error('Error creating order:', err);

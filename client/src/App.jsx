@@ -9,6 +9,7 @@ import OrderSuccessModal from './components/OrderSuccessModal';
 import TrackOrderPage from './components/TrackOrderPage';
 import AdminLogin from './components/admin/AdminLogin';
 import AdminDashboard from './components/admin/AdminDashboard';
+import InvoiceModal from './components/InvoiceModal';
 import { Search, Flame } from 'lucide-react';
 
 export default function App() {
@@ -31,6 +32,7 @@ export default function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [successOrderData, setSuccessOrderData] = useState(null);
+  const [invoiceOrder, setInvoiceOrder] = useState(null);
   const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
   const [trackInitialQuery, setTrackInitialQuery] = useState('');
 
@@ -261,7 +263,10 @@ export default function App() {
         )}
 
         {currentView === 'track' && (
-          <TrackOrderPage initialSearchQuery={trackInitialQuery} />
+          <TrackOrderPage
+            initialSearchQuery={trackInitialQuery}
+            onOpenInvoice={(order) => setInvoiceOrder(order)}
+          />
         )}
 
         {currentView === 'admin' && (
@@ -317,6 +322,7 @@ export default function App() {
             setSuccessOrderData(null);
             setCurrentView('shop');
           }}
+          onOpenInvoice={(order) => setInvoiceOrder(order)}
         />
       )}
 
@@ -329,6 +335,15 @@ export default function App() {
           setCurrentView('admin');
         }}
       />
+
+      {/* Standalone Printable & Downloadable Invoice Modal */}
+      {invoiceOrder && (
+        <InvoiceModal
+          isOpen={!!invoiceOrder}
+          order={invoiceOrder}
+          onClose={() => setInvoiceOrder(null)}
+        />
+      )}
 
       {/* Footer */}
       <footer className="main-footer">

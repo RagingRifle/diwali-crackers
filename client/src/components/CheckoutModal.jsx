@@ -64,9 +64,13 @@ export default function CheckoutModal({
         ...formData,
         items: cartItems.map(item => ({
           id: item.id,
+          code: item.code || '',
           name: item.name,
-          price: item.price,
-          quantity: item.quantity
+          content: item.content || item.pack_size || '',
+          mrp: Number(item.mrp) || Number(item.price) || 0,
+          price: Number(item.price),
+          quantity: item.quantity,
+          is_combo: item.is_combo || 0
         }))
       };
 
@@ -82,12 +86,21 @@ export default function CheckoutModal({
         throw new Error(data.error || 'Failed to submit order. Please try again.');
       }
 
-      onOrderSuccess({
+      onOrderSuccess(data.order || {
+        id: data.orderId,
         orderId: data.orderId,
+        customer_name: formData.customer_name,
         customerName: formData.customer_name,
         phone: formData.phone,
+        email: formData.email,
+        address: formData.address,
+        city: formData.city,
+        pincode: formData.pincode,
+        notes: formData.notes,
+        total_amount: data.totalAmount,
         totalAmount: data.totalAmount,
-        city: formData.city
+        items: payload.items,
+        created_at: new Date().toISOString()
       });
     } catch (err) {
       console.error('Order submission error:', err);

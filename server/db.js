@@ -64,7 +64,7 @@ async function getDb() {
 }
 
 function initTables(db) {
-  // Create tables
+  // Create base tables if they do not exist
   db.rawDb.run(`
     CREATE TABLE IF NOT EXISTS products (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -74,11 +74,14 @@ function initTables(db) {
       content TEXT DEFAULT '1 Box',
       price REAL NOT NULL,
       mrp REAL NOT NULL,
+      discount_percent REAL DEFAULT 0,
       image TEXT DEFAULT '',
       description TEXT DEFAULT '',
       pack_size TEXT DEFAULT '1 Box',
       in_stock INTEGER DEFAULT 1,
       featured INTEGER DEFAULT 0,
+      is_combo INTEGER DEFAULT 0,
+      combo_items TEXT DEFAULT '',
       created_at TEXT DEFAULT (datetime('now'))
     );
 
@@ -103,7 +106,10 @@ function initTables(db) {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       order_id TEXT NOT NULL,
       product_id INTEGER,
+      product_code TEXT DEFAULT '',
       product_name TEXT NOT NULL,
+      content TEXT DEFAULT '',
+      mrp REAL DEFAULT 0,
       price REAL NOT NULL,
       quantity INTEGER NOT NULL,
       subtotal REAL NOT NULL,
@@ -119,6 +125,44 @@ function initTables(db) {
   `);
   db.save();
 
+  // Migrations for existing databases
+  try {
+    const productCols = db.all("PRAGMA table_info(products)").map(c => c.name);
+    if (!productCols.includes('is_combo')) {
+      db.rawDb.run("ALTER TABLE products ADD COLUMN is_combo INTEGER DEFAULT 0");
+    }
+    if (!productCols.includes('combo_items')) {
+      db.rawDb.run("ALTER TABLE products ADD COLUMN combo_items TEXT DEFAULT ''");
+    }
+    if (!productCols.includes('discount_percent')) {
+      db.rawDb.run("ALTER TABLE products ADD COLUMN discount_percent REAL DEFAULT 0");
+    }
+
+    const orderItemCols = db.all("PRAGMA table_info(order_items)").map(c => c.name);
+    if (!orderItemCols.includes('product_code')) {
+      db.rawDb.run("ALTER TABLE order_items ADD COLUMN product_code TEXT DEFAULT ''");
+    }
+    if (!orderItemCols.includes('content')) {
+      db.rawDb.run("ALTER TABLE order_items ADD COLUMN content TEXT DEFAULT ''");
+    }
+    if (!orderItemCols.includes('mrp')) {
+      db.rawDb.run("ALTER TABLE order_items ADD COLUMN mrp REAL DEFAULT 0");
+    }
+    db.save();
+  } catch (mErr) {
+    console.log('Migration note:', mErr.message);
+  }
+
+  // Update discount_percent where 0
+  try {
+    db.rawDb.run(`
+      UPDATE products 
+      SET discount_percent = ROUND(((mrp - price) * 100.0) / mrp)
+      WHERE mrp > price AND (discount_percent IS NULL OR discount_percent = 0)
+    `);
+    db.save();
+  } catch (e) {}
+
   // Check admin
   const admin = db.get("SELECT * FROM admins WHERE username = ?", ['admin']);
   if (!admin) {
@@ -127,11 +171,14 @@ function initTables(db) {
     console.log('Seeded default admin user: admin / diwali@2026');
   }
 
-  // Always re-seed from CSV to keep products fresh
+  // Check products count
   const productCount = db.get("SELECT COUNT(*) as count FROM products");
   if (!productCount || productCount.count === 0) {
     seedProductsFromCSV(db);
   }
+
+  // Seed default combo bundles if none exist
+  seedCombosIfEmpty(db);
 }
 
 // ─── Category mapping ────────────────────────────────────────────────────────
@@ -159,14 +206,13 @@ function assignCategory(name, content) {
       n.includes('KURUVI') || n.includes('RED BIJILLI') ||
       n.includes('100') || n.includes('200') || n.includes('1000') ||
       n.includes('2000') || n.includes('5000')) {
-    // PCS counts → garland crackers
     if (content === 'PCS') return 'Garland Crackers';
     return 'Sound Crackers';
   }
-  if (n.includes('SHOT') || n.includes('PEACOCK') && n.includes('MULTI')) {
+  if (n.includes('SHOT') || (n.includes('PEACOCK') && n.includes('MULTI'))) {
     return 'Aerial Shots';
   }
-  if (n.includes('ROCKET') || n.includes('BOMB') && !n.includes('HYDRO')) {
+  if (n.includes('ROCKET') || (n.includes('BOMB') && !n.includes('HYDRO'))) {
     return 'Rockets';
   }
   if (n.includes('HOLI') || n.includes('KINDER JOY') ||
@@ -227,12 +273,10 @@ function assignCategory(name, content) {
 // ─── Parse Products.csv and insert ────────────────────────────────────────────
 function parseCSV(raw) {
   const lines = raw.split('\n').filter(l => l.trim());
-  const header = lines[0];
   const rows = [];
 
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i];
-    // Parse quoted CSV fields
     const fields = [];
     let inQuote = false;
     let cur = '';
@@ -264,7 +308,6 @@ function seedProductsFromCSV(db) {
   const raw = fs.readFileSync(CSV_FILE, 'utf8');
   const rows = parseCSV(raw);
 
-  // Columns: Category, Code, Product Name, Content, Actual Price, Price
   let inserted = 0;
   for (const row of rows) {
     if (row.length < 6) continue;
@@ -274,14 +317,15 @@ function seedProductsFromCSV(db) {
     const content = row[3].trim();
     const mrp = parseFloat(row[4]) || 0;
     const price = parseFloat(row[5]) || 0;
+    const discount_percent = mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0;
 
     if (!name || !code) continue;
 
     const category = assignCategory(name, content);
 
     db.run(`
-      INSERT INTO products (code, name, category, content, price, mrp, image, description, pack_size, in_stock, featured)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0)
+      INSERT INTO products (code, name, category, content, price, mrp, discount_percent, image, description, pack_size, in_stock, featured, is_combo, combo_items)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0, 0, '')
     `, [
       code,
       name,
@@ -289,7 +333,8 @@ function seedProductsFromCSV(db) {
       content,
       price,
       mrp,
-      '', // blank - will be matched via /products/{code}.jpg when available
+      discount_percent,
+      '',
       '',
       content
     ]);
@@ -298,6 +343,114 @@ function seedProductsFromCSV(db) {
 
   db.save();
   console.log(`Seeded ${inserted} products from CSV successfully.`);
+}
+
+function seedCombosIfEmpty(db) {
+  const existingCombos = db.get("SELECT COUNT(*) as count FROM products WHERE is_combo = 1");
+  if (existingCombos && existingCombos.count > 0) return;
+
+  console.log('Seeding sample Combo Bundles...');
+
+  // Combo 1: Family Dhamaka Celebration Box
+  const combo1Items = [
+    { code: '5', name: '10 CM ELECTRIC', content: 'BOX', quantity: 2, mrp: 110, price: 17 },
+    { code: '23', name: 'FLOWER POTS BIG', content: 'BOX', quantity: 1, mrp: 360, price: 54 },
+    { code: '30', name: 'GROUND CHAKKAR SPECIAL', content: 'BOX', quantity: 1, mrp: 320, price: 48 },
+    { code: '39', name: '2 3/4 KURUVI CRACKERS', content: 'PKT', quantity: 2, mrp: 53, price: 8 },
+    { code: '218', name: '12 SHOTS ( MULTI COLOUR CRACKLING )', content: 'BOX', quantity: 1, mrp: 1100, price: 165 }
+  ];
+  const combo1Mrp = 110 * 2 + 360 + 320 + 53 * 2 + 1100; // 2106
+  const combo1Price = 280; // Special bundle deal
+  const combo1Discount = Math.round(((combo1Mrp - combo1Price) / combo1Mrp) * 100);
+
+  // Combo 2: Kids Joy Sparkling Hamper
+  const combo2Items = [
+    { code: '8', name: '10 CM SPARKLING RED', content: 'BOX', quantity: 2, mrp: 140, price: 21 },
+    { code: '7', name: '10 CM SUPREME GREEN', content: 'BOX', quantity: 2, mrp: 130, price: 20 },
+    { code: '74', name: 'KINDER JOY RED', content: 'BOX', quantity: 1, mrp: 480, price: 72 },
+    { code: '144', name: 'BUTTER FLY', content: 'BOX', quantity: 1, mrp: 550, price: 83 },
+    { code: '302', name: 'LOLLI POP FOUNTAIN', content: 'BOX', quantity: 1, mrp: 490, price: 74 }
+  ];
+  const combo2Mrp = 140 * 2 + 130 * 2 + 480 + 550 + 490; // 2060
+  const combo2Price = 260;
+  const combo2Discount = Math.round(((combo2Mrp - combo2Price) / combo2Mrp) * 100);
+
+  // Combo 3: Royal Sky Symphony Mega Pack
+  const combo3Items = [
+    { code: '218', name: '12 SHOTS ( MULTI COLOUR CRACKLING )', content: 'BOX', quantity: 1, mrp: 1100, price: 165 },
+    { code: '220', name: '30 SHOTS ( MULTI COLOUR CRACKLING )', content: 'BOX', quantity: 1, mrp: 2500, price: 375 },
+    { code: '119', name: 'GRAND MASTER', content: '1pcs', quantity: 1, mrp: 1600, price: 240 },
+    { code: '65', name: 'WHISHLING ROCKET', content: 'BOX', quantity: 1, mrp: 1000, price: 150 },
+    { code: '366', name: 'PEACOCK BATA ( MULTI COLOUR CRACKLING )', content: '1pcs', quantity: 1, mrp: 2400, price: 360 }
+  ];
+  const combo3Mrp = 1100 + 2500 + 1600 + 1000 + 2400; // 8600
+  const combo3Price = 1150;
+  const combo3Discount = Math.round(((combo3Mrp - combo3Price) / combo3Mrp) * 100);
+
+  const sampleCombos = [
+    {
+      code: 'CB-101',
+      name: 'Family Dhamaka Celebration Hamper (7 Packs)',
+      category: 'Combo Bundles',
+      content: '7 Items Hamper',
+      mrp: combo1Mrp,
+      price: combo1Price,
+      discount_percent: combo1Discount,
+      combo_items: JSON.stringify(combo1Items),
+      description: 'The ultimate family pack: 2x Sparklers, Flower Pots, Chakkars, 2x Kuruvi Crackers & 12 Shots Sky Cake.',
+      image: '',
+      featured: 1
+    },
+    {
+      code: 'CB-102',
+      name: 'Kids Sparkler & Fountain Magic Box (7 Packs)',
+      category: 'Combo Bundles',
+      content: '7 Items Hamper',
+      mrp: combo2Mrp,
+      price: combo2Price,
+      discount_percent: combo2Discount,
+      combo_items: JSON.stringify(combo2Items),
+      description: 'Child-safe colourful festive box with Red & Green Sparklers, Kinder Joy, Flying Butterfly and Lollipop Fountain.',
+      image: '',
+      featured: 1
+    },
+    {
+      code: 'CB-103',
+      name: 'Royal Sivakasi Sky Show Hamper (5 Mega Fireworks)',
+      category: 'Combo Bundles',
+      content: '5 Mega Fireworks',
+      mrp: combo3Mrp,
+      price: combo3Price,
+      discount_percent: combo3Discount,
+      combo_items: JSON.stringify(combo3Items),
+      description: 'Spectacular night sky aerial display with 12 Shots, 30 Shots Cake, Grand Master Aerial Shell, Whistling Rockets & Peacock Bata.',
+      image: '',
+      featured: 1
+    }
+  ];
+
+  for (const c of sampleCombos) {
+    db.run(`
+      INSERT INTO products (code, name, category, content, price, mrp, discount_percent, image, description, pack_size, in_stock, featured, is_combo, combo_items)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, 1, ?)
+    `, [
+      c.code,
+      c.name,
+      c.category,
+      c.content,
+      c.price,
+      c.mrp,
+      c.discount_percent,
+      c.image,
+      c.description,
+      c.content,
+      c.featured,
+      c.combo_items
+    ]);
+  }
+
+  db.save();
+  console.log(`Seeded ${sampleCombos.length} sample combo bundles successfully.`);
 }
 
 module.exports = { getDb };
