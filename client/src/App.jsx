@@ -11,6 +11,7 @@ import AdminLogin from './components/admin/AdminLogin';
 import AdminDashboard from './components/admin/AdminDashboard';
 import InvoiceModal from './components/InvoiceModal';
 import { Search, Flame } from 'lucide-react';
+import HomePage from './components/HomePage';
 
 export default function App() {
   const [currentView, setCurrentView] = useState('shop');
@@ -150,6 +151,9 @@ export default function App() {
       />
 
       <main style={{ flex: 1 }}>
+        {currentView === 'home' && (
+          <HomePage setCurrentView={setCurrentView} />
+        )}
         {currentView === 'shop' && (
           <>
             {/* ── SHOP BY CATEGORY BAR ── */}

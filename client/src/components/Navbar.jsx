@@ -38,6 +38,13 @@ export default function Navbar({
           {/* Navigation Links */}
           <div className="nav-links">
             <button
+              className={`nav-link ${currentView === 'home' ? 'active' : ''}`}
+              onClick={() => setCurrentView('home')}
+            >
+              <Sparkles size={17} />
+              <span>Home</span>
+            </button>
+            <button
               className={`nav-link ${currentView === 'shop' ? 'active' : ''}`}
               onClick={() => setCurrentView('shop')}
             >
