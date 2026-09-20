@@ -1,0 +1,12 @@
+{
+  "name": "diwali-crackers-store",
+  "version": "1.0.0",
+  "description": "Diwali Crackers E-Commerce Store with Pure CSS Red & White Theme, Form-based Checkout, Tracking, and Admin Panel",
+  "scripts": {
+    "build": "npm --prefix server install && npm --prefix client install && npm --prefix client run build",
+    "start": "node server/server.js",
+    "server": "node server/server.js",
+    "client": "npm --prefix client run dev"
+  },
+  "keywords": ["diwali", "crackers", "ecommerce", "react", "express", "sqlite"]
+}
