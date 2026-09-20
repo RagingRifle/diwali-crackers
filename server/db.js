@@ -4,6 +4,8 @@ const path = require('path');
 const bcrypt = require('bcryptjs');
 
 const DB_FILE = path.join(__dirname, 'diwali.db');
+const CSV_FILE = path.join(__dirname, '../Products.csv');
+
 let dbInstance = null;
 
 async function getDb() {
@@ -36,7 +38,6 @@ async function getDb() {
     run(sql, params = []) {
       db.run(sql, params);
       save();
-      // Get last insert ID
       const res = db.exec("SELECT last_insert_rowid() as id");
       const lastId = res[0] && res[0].values[0] ? res[0].values[0][0] : null;
       return { lastInsertRowid: lastId };
@@ -67,12 +68,14 @@ function initTables(db) {
   db.rawDb.run(`
     CREATE TABLE IF NOT EXISTS products (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
+      code TEXT,
       name TEXT NOT NULL,
       category TEXT NOT NULL,
+      content TEXT DEFAULT '1 Box',
       price REAL NOT NULL,
       mrp REAL NOT NULL,
-      image TEXT NOT NULL,
-      description TEXT,
+      image TEXT DEFAULT '',
+      description TEXT DEFAULT '',
       pack_size TEXT DEFAULT '1 Box',
       in_stock INTEGER DEFAULT 1,
       featured INTEGER DEFAULT 0,
@@ -124,260 +127,177 @@ function initTables(db) {
     console.log('Seeded default admin user: admin / diwali@2026');
   }
 
-  // Check products
+  // Always re-seed from CSV to keep products fresh
   const productCount = db.get("SELECT COUNT(*) as count FROM products");
   if (!productCount || productCount.count === 0) {
-    seedProducts(db);
+    seedProductsFromCSV(db);
   }
 }
 
-function seedProducts(db) {
-  console.log('Seeding Diwali Crackers catalog...');
-  const sampleProducts = [
-    // Sparklers
-    {
-      name: "10cm Electric Sparklers",
-      category: "Sparklers",
-      price: 65,
-      mrp: 120,
-      image: "https://images.unsplash.com/photo-1514565131-fce0801e5785?w=500&auto=format&fit=crop&q=60",
-      description: "Bright silver sparkling sticks, low smoke, safe and fun for children.",
-      pack_size: "10 Sticks per box",
-      featured: 1
-    },
-    {
-      name: "15cm Green Crackling Sparklers",
-      category: "Sparklers",
-      price: 110,
-      mrp: 190,
-      image: "https://images.unsplash.com/photo-1531219432768-9f540ce91ef3?w=500&auto=format&fit=crop&q=60",
-      description: "Dazzling emerald green sparkles with rhythmic festive crackling sound.",
-      pack_size: "10 Sticks per box",
-      featured: 0
-    },
-    {
-      name: "30cm Golden Shower Sparklers",
-      category: "Sparklers",
-      price: 180,
-      mrp: 290,
-      image: "https://images.unsplash.com/photo-1498931299472-f7a63a5a1cfa?w=500&auto=format&fit=crop&q=60",
-      description: "Extra-long duration golden sparks radiating pure Diwali festive cheer.",
-      pack_size: "5 Sticks per box",
-      featured: 1
-    },
-    {
-      name: "50cm Mega Colour Sparklers",
-      category: "Sparklers",
-      price: 260,
-      mrp: 420,
-      image: "https://images.unsplash.com/photo-1508963493744-76fce69379c0?w=500&auto=format&fit=crop&q=60",
-      description: "Longest lasting multi-colour sparkling experience with multi-stage glow.",
-      pack_size: "5 Sticks per box",
-      featured: 0
-    },
+// ─── Category mapping ────────────────────────────────────────────────────────
+function assignCategory(name, content) {
+  const n = name.toUpperCase();
 
-    // Flower Pots
-    {
-      name: "Flower Pots Special (Asoka)",
-      category: "Flower pots",
-      price: 140,
-      mrp: 240,
-      image: "https://images.unsplash.com/photo-1513151233558-d860c5398176?w=500&auto=format&fit=crop&q=60",
-      description: "Traditional cone fountains erupting into dense golden silver floral showers.",
-      pack_size: "10 Pieces per box",
-      featured: 1
-    },
-    {
-      name: "Flower Pots Deluxe (Tri-Colour)",
-      category: "Flower pots",
-      price: 240,
-      mrp: 380,
-      image: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=500&auto=format&fit=crop&q=60",
-      description: "Tri-stage colour changes: vibrant red, sparkling silver, and bright emerald.",
-      pack_size: "10 Pieces per box",
-      featured: 1
-    },
-    {
-      name: "Giant Colour Koti Fountain",
-      category: "Flower pots",
-      price: 320,
-      mrp: 500,
-      image: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&auto=format&fit=crop&q=60",
-      description: "Super tall 15-feet erupting shower with crackling multi-colour stars.",
-      pack_size: "5 Pieces per box",
-      featured: 0
-    },
+  if (/\bCM\b.*ELECTRIC|CM.*CRACL|CM.*SPARKLING|CM.*SUPREME/.test(n) ||
+      n.includes('SPARKLER') || n.includes('TWINKLING STAR') ||
+      /^\d+\s*CM\b/.test(n)) {
+    return 'Sparklers';
+  }
+  if (n.includes('FLOWER POT') || n.includes('COLOURKOTI') ||
+      n.includes('TRICOLOUR') || n.includes('TRI COLOUR')) {
+    return 'Flowerpots';
+  }
+  if (n.includes('CHAKKAR') || n.includes('4X4 WHEEL') ||
+      n.includes('WIRE CHAKKAR') || n.includes('WIRECHAKKAR') ||
+      n.includes('PIN WHEEL')) {
+    return 'Ground Chakkars';
+  }
+  if (n.includes('HYDRO BOMB') || n.includes('MARSAL')) {
+    return 'Bombs';
+  }
+  if (n.includes('LAKSHMI') || n.includes('BIJILLI') ||
+      n.includes('KURUVI') || n.includes('RED BIJILLI') ||
+      n.includes('100') || n.includes('200') || n.includes('1000') ||
+      n.includes('2000') || n.includes('5000')) {
+    // PCS counts → garland crackers
+    if (content === 'PCS') return 'Garland Crackers';
+    return 'Sound Crackers';
+  }
+  if (n.includes('SHOT') || n.includes('PEACOCK') && n.includes('MULTI')) {
+    return 'Aerial Shots';
+  }
+  if (n.includes('ROCKET') || n.includes('BOMB') && !n.includes('HYDRO')) {
+    return 'Rockets';
+  }
+  if (n.includes('HOLI') || n.includes('KINDER JOY') ||
+      n.includes('LOLLI') || n.includes('LOLLIPOP')) {
+    return 'Novelty Items';
+  }
+  if (n.includes('PHOTO FLASH') || n.includes('COLOUR SMOKE') ||
+      n.includes('SIREN') || n.includes('SMOKE')) {
+    return 'Novelty Items';
+  }
+  if (n.includes('BUTTERFLY') || n.includes('HELICOPTER') ||
+      n.includes('HAMMER') || n.includes('BAT') ||
+      n.includes('LEO') || n.includes('DANDIYA') ||
+      n.includes('HUNTER') || n.includes('BRAVE') ||
+      n.includes('RUN') || n.includes('FOOT') ||
+      n.includes('CRICKET') || n.includes('CYCLING') ||
+      n.includes('WARRIOR') || n.includes('BOSS') ||
+      n.includes('CHICAGO') || n.includes('GRAND MASTER') ||
+      n.includes('GRAND GANGSTAR') || n.includes('ROCK GAKI') ||
+      n.includes('BEAUTY QUEEN') || n.includes('SOCIAL MEDIA') ||
+      n.includes('HERO ACADEMIA') || n.includes('MINECRAFT') ||
+      n.includes('HIDEN SAFARI') || n.includes('WIRE CHAKKAR')) {
+    return 'Fancy Novelties';
+  }
+  if (n.includes('TIN') || n.includes('PEACOCK FEATHER') ||
+      n.includes('SILVER STAR') || n.includes('ROCK STAR') ||
+      n.includes('GOLDEN PEACOCK') || n.includes('CANDY') ||
+      n.includes('HIGH VOLTAG') || n.includes('POPPIN') ||
+      n.includes('BLUE ICE') || n.includes('GOLD FISH') ||
+      n.includes('HI - SONA') || n.includes('POWER POT') ||
+      n.includes('BINGO') || n.includes('KURKURE') ||
+      n.includes('TANGLES') || n.includes('LAYS') ||
+      n.includes('MINIOUS') || n.includes('WATER QUEEN') ||
+      n.includes('POP CORN') || n.includes('WELCOME SHOT') ||
+      n.includes('WONDER TREE') || n.includes('CRACKLING KING') ||
+      n.includes('MAGIC BUTTERFLY') || n.includes('TITANIC') ||
+      n.includes('MINI PEARL') || n.includes('TIM TIM') ||
+      n.includes('CEACKLING') || n.includes('HAND SHOTS') ||
+      n.includes('CHHOTA') || n.includes('LOLLI POP FOUNTAIN')) {
+    return 'Fancy Fountains';
+  }
+  if (n.includes('FANTASY ISLAND') || n.includes('FIFTY FIFTY') ||
+      n.includes('CARNIVAL') || n.includes('NEW MOON') ||
+      n.includes('VENICE') || n.includes('PARIS') ||
+      n.includes('TOKYO') || n.includes('MIAMI') ||
+      n.includes('LASVEGAS') || n.includes('AMAZE') ||
+      n.includes('MONKEY QUEST') || n.includes('ATTACK MODE') ||
+      n.includes('NEWYEAR KISS') || n.includes('PEPSI') ||
+      n.includes('RED BLUE') || n.includes('COCO COLA') ||
+      n.includes('LIMCA') || n.includes('FANTA') ||
+      n.includes('7 UP')) {
+    return 'Sky Shots';
+  }
 
-    // Ground Chakras
-    {
-      name: "Ground Chakkar Special",
-      category: "Chakras",
-      price: 120,
-      mrp: 200,
-      image: "https://images.unsplash.com/photo-1543258103-a62bdc069871?w=500&auto=format&fit=crop&q=60",
-      description: "High speed rotating ground wheel producing an intense circle of fiery sparks.",
-      pack_size: "10 Pieces per box",
-      featured: 1
-    },
-    {
-      name: "Ground Chakkar Deluxe Big",
-      category: "Chakras",
-      price: 190,
-      mrp: 310,
-      image: "https://images.unsplash.com/photo-1563245372-f21724e3856d?w=500&auto=format&fit=crop&q=60",
-      description: "Heavy duration spinning chakra with multi-ring golden light halos.",
-      pack_size: "10 Pieces per box",
-      featured: 0
-    },
-    {
-      name: "Disco Spinning Wheel (Multi-Colour)",
-      category: "Chakras",
-      price: 240,
-      mrp: 390,
-      image: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=500&auto=format&fit=crop&q=60",
-      description: "Musical whirl with flashing red and green lights as it spins across the floor.",
-      pack_size: "5 Pieces per box",
-      featured: 0
-    },
+  return 'Miscellaneous';
+}
 
-    // Rockets
-    {
-      name: "Whistling Sound Rocket",
-      category: "Rockets",
-      price: 180,
-      mrp: 300,
-      image: "https://images.unsplash.com/photo-1498931299472-f7a63a5a1cfa?w=500&auto=format&fit=crop&q=60",
-      description: "High-pitch whistling ascent reaching 100 feet followed by a booming burst.",
-      pack_size: "10 Pieces per box",
-      featured: 1
-    },
-    {
-      name: "Lunik Sky Rocket",
-      category: "Rockets",
-      price: 220,
-      mrp: 360,
-      image: "https://images.unsplash.com/photo-1514565131-fce0801e5785?w=500&auto=format&fit=crop&q=60",
-      description: "Straight line high altitude shooter bursting into silver palm tree canopy.",
-      pack_size: "10 Pieces per box",
-      featured: 0
-    },
-    {
-      name: "Parachute Floating Rocket",
-      category: "Rockets",
-      price: 350,
-      mrp: 550,
-      image: "https://images.unsplash.com/photo-1531219432768-9f540ce91ef3?w=500&auto=format&fit=crop&q=60",
-      description: "Ejects a gentle glowing parachute floating slowly back down from the night sky.",
-      pack_size: "5 Pieces per box",
-      featured: 1
-    },
+// ─── Parse Products.csv and insert ────────────────────────────────────────────
+function parseCSV(raw) {
+  const lines = raw.split('\n').filter(l => l.trim());
+  const header = lines[0];
+  const rows = [];
 
-    // Bombs
-    {
-      name: "Classic Laxmi Crackers 4-Inch",
-      category: "Bombs",
-      price: 90,
-      mrp: 160,
-      image: "https://images.unsplash.com/photo-1513151233558-d860c5398176?w=500&auto=format&fit=crop&q=60",
-      description: "Classic Diwali essential with sharp energetic thunderous sound.",
-      pack_size: "5 Bundles",
-      featured: 1
-    },
-    {
-      name: "Hydro Bomb (Mega Sound)",
-      category: "Bombs",
-      price: 195,
-      mrp: 320,
-      image: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=500&auto=format&fit=crop&q=60",
-      description: "Heavy bass concussion sound, green-certified safe Sivakasi formula.",
-      pack_size: "10 Pieces per box",
-      featured: 1
-    },
-    {
-      name: "Digital 28 Chorsa Crackers Garland",
-      category: "Bombs",
-      price: 140,
-      mrp: 230,
-      image: "https://images.unsplash.com/photo-1543258103-a62bdc069871?w=500&auto=format&fit=crop&q=60",
-      description: "Continuous rapid-fire crackling string to ward off darkness.",
-      pack_size: "1 Garland roll",
-      featured: 0
-    },
-
-    // Fancy items
-    {
-      name: "7 Shots Peacock Aerial Fountain",
-      category: "Fancy items",
-      price: 280,
-      mrp: 450,
-      image: "https://images.unsplash.com/photo-1508963493744-76fce69379c0?w=500&auto=format&fit=crop&q=60",
-      description: "Successive 7 high-altitude bursts of vivid peacock blues, gold, and ruby red.",
-      pack_size: "1 Piece",
-      featured: 1
-    },
-    {
-      name: "12 Shots Sky High Symphony",
-      category: "Fancy items",
-      price: 480,
-      mrp: 750,
-      image: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&auto=format&fit=crop&q=60",
-      description: "Spectacular multi-shot aerial cake painting the night sky in cascading stars.",
-      pack_size: "1 Cake Box",
-      featured: 1
-    },
-    {
-      name: "Magic Butterfly (Flying Spinner)",
-      category: "Fancy items",
-      price: 150,
-      mrp: 250,
-      image: "https://images.unsplash.com/photo-1563245372-f21724e3856d?w=500&auto=format&fit=crop&q=60",
-      description: "Soars 20 feet in circular wings of green and gold light before bursting.",
-      pack_size: "10 Pieces per box",
-      featured: 0
-    },
-
-    // Gift boxes
-    {
-      name: "Diwali Family Jumbo Gift Box (35 Items)",
-      category: "Gift boxes",
-      price: 1499,
-      mrp: 2499,
-      image: "https://images.unsplash.com/photo-1513151233558-d860c5398176?w=500&auto=format&fit=crop&q=60",
-      description: "Complete celebration set: Sparklers, Flower Pots, Chakkars, Rockets, and Fancy items in an ornate red gift box.",
-      pack_size: "Complete 35 items hamper",
-      featured: 1
-    },
-    {
-      name: "Royal Celebration VIP Hamper (50 Items)",
-      category: "Gift boxes",
-      price: 2999,
-      mrp: 4999,
-      image: "https://images.unsplash.com/photo-1508963493744-76fce69379c0?w=500&auto=format&fit=crop&q=60",
-      description: "Premium collection featuring top-tier multi-shot aerial cakes, giant fountains, and family favourites.",
-      pack_size: "Deluxe 50 items wooden trunk box",
-      featured: 1
-    },
-    {
-      name: "Kids Joy Sparkling Combo (20 Items)",
-      category: "Gift boxes",
-      price: 899,
-      mrp: 1499,
-      image: "https://images.unsplash.com/photo-1514565131-fce0801e5785?w=500&auto=format&fit=crop&q=60",
-      description: "Child-friendly low smoke, colourful items including pop pops, sparklers, magic pencil, and colourful pots.",
-      pack_size: "20 Kid-safe items box",
-      featured: 1
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i];
+    // Parse quoted CSV fields
+    const fields = [];
+    let inQuote = false;
+    let cur = '';
+    for (let c = 0; c < line.length; c++) {
+      const ch = line[c];
+      if (ch === '"') {
+        inQuote = !inQuote;
+      } else if (ch === ',' && !inQuote) {
+        fields.push(cur.trim());
+        cur = '';
+      } else {
+        cur += ch;
+      }
     }
-  ];
+    fields.push(cur.trim());
+    rows.push(fields);
+  }
+  return rows;
+}
 
-  for (const item of sampleProducts) {
+function seedProductsFromCSV(db) {
+  console.log('Seeding products from Products.csv...');
+
+  if (!fs.existsSync(CSV_FILE)) {
+    console.warn('Products.csv not found, skipping CSV seeding.');
+    return;
+  }
+
+  const raw = fs.readFileSync(CSV_FILE, 'utf8');
+  const rows = parseCSV(raw);
+
+  // Columns: Category, Code, Product Name, Content, Actual Price, Price
+  let inserted = 0;
+  for (const row of rows) {
+    if (row.length < 6) continue;
+
+    const code = row[1].trim();
+    const name = row[2].trim();
+    const content = row[3].trim();
+    const mrp = parseFloat(row[4]) || 0;
+    const price = parseFloat(row[5]) || 0;
+
+    if (!name || !code) continue;
+
+    const category = assignCategory(name, content);
+
     db.run(`
-      INSERT INTO products (name, category, price, mrp, image, description, pack_size, in_stock, featured)
-      VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)
-    `, [item.name, item.category, item.price, item.mrp, item.image, item.description, item.pack_size, item.featured]);
+      INSERT INTO products (code, name, category, content, price, mrp, image, description, pack_size, in_stock, featured)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0)
+    `, [
+      code,
+      name,
+      category,
+      content,
+      price,
+      mrp,
+      '', // blank - will be matched via /products/{code}.jpg when available
+      '',
+      content
+    ]);
+    inserted++;
   }
 
   db.save();
-  console.log(`Seeded ${sampleProducts.length} crackers successfully.`);
+  console.log(`Seeded ${inserted} products from CSV successfully.`);
 }
 
 module.exports = { getDb };

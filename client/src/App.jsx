@@ -1,31 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Navbar from './components/Navbar';
-import HeroBanner from './components/HeroBanner';
-import CategoryFilter from './components/CategoryFilter';
-import ProductCard from './components/ProductCard';
+import ShopByCategoryBar from './components/ShopByCategoryBar';
+import ProductRowItem from './components/ProductRowItem';
+import SelectedItemsSidebar from './components/SelectedItemsSidebar';
 import CartDrawer from './components/CartDrawer';
 import CheckoutModal from './components/CheckoutModal';
 import OrderSuccessModal from './components/OrderSuccessModal';
 import TrackOrderPage from './components/TrackOrderPage';
 import AdminLogin from './components/admin/AdminLogin';
 import AdminDashboard from './components/admin/AdminDashboard';
-import { Sparkles, Phone, ShieldCheck, Truck, Heart, ArrowUp } from 'lucide-react';
+import { Search, Flame } from 'lucide-react';
 
 export default function App() {
-  const [currentView, setCurrentView] = useState('shop'); // 'shop', 'track', 'admin'
+  const [currentView, setCurrentView] = useState('shop');
   const [products, setProducts] = useState([]);
+  const [categoryMeta, setCategoryMeta] = useState([]); // [{category, count}]
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Cart State (with local storage persistence)
+  // Cart
   const [cart, setCart] = useState(() => {
     try {
       const saved = localStorage.getItem('diwali_cart');
       return saved ? JSON.parse(saved) : [];
-    } catch (e) {
-      return [];
-    }
+    } catch { return []; }
   });
 
   // Modals
@@ -35,33 +34,32 @@ export default function App() {
   const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
   const [trackInitialQuery, setTrackInitialQuery] = useState('');
 
-  // Admin state
+  // Admin
   const [adminUser, setAdminUser] = useState(() => {
     try {
       const saved = localStorage.getItem('diwali_admin_user');
       const token = localStorage.getItem('diwali_admin_token');
       return saved && token ? JSON.parse(saved) : null;
-    } catch (e) {
-      return null;
-    }
+    } catch { return null; }
   });
 
-  // Save Cart to local storage
+  // Persist cart
   useEffect(() => {
-    try {
-      localStorage.setItem('diwali_cart', JSON.stringify(cart));
-    } catch (e) {}
+    try { localStorage.setItem('diwali_cart', JSON.stringify(cart)); } catch {}
   }, [cart]);
 
   // Fetch Products
   const fetchProducts = async () => {
     try {
       setLoadingProducts(true);
-      const res = await fetch('/api/products');
-      const data = await res.json();
-      if (data.success) {
-        setProducts(data.products);
-      }
+      const [prodRes, catRes] = await Promise.all([
+        fetch('/api/products'),
+        fetch('/api/products/categories'),
+      ]);
+      const prodData = await prodRes.json();
+      const catData = await catRes.json();
+      if (prodData.success) setProducts(prodData.products);
+      if (catData.success) setCategoryMeta(catData.categories);
     } catch (e) {
       console.error('Error fetching products:', e);
     } finally {
@@ -69,31 +67,22 @@ export default function App() {
     }
   };
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
+  useEffect(() => { fetchProducts(); }, []);
 
   // Cart actions
   const handleAddToCart = (product) => {
     setCart((prev) => {
       const existing = prev.find((i) => i.id === product.id);
-      if (existing) {
-        return prev.map((i) =>
-          i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i
-        );
-      }
+      if (existing) return prev.map((i) => i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i);
       return [...prev, { ...product, quantity: 1 }];
     });
-    setIsCartOpen(true);
   };
 
   const handleUpdateQuantity = (productId, newQty) => {
     if (newQty <= 0) {
       setCart((prev) => prev.filter((i) => i.id !== productId));
     } else {
-      setCart((prev) =>
-        prev.map((i) => (i.id === productId ? { ...i, quantity: newQty } : i))
-      );
+      setCart((prev) => prev.map((i) => i.id === productId ? { ...i, quantity: newQty } : i));
     }
   };
 
@@ -120,22 +109,34 @@ export default function App() {
     setCurrentView('shop');
   };
 
-  // Filter products
-  const filteredProducts = products.filter((p) => {
-    const matchesCategory =
-      selectedCategory === 'All' || p.category.toLowerCase() === selectedCategory.toLowerCase();
-    const matchesSearch =
-      !searchQuery.trim() ||
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (p.description && p.description.toLowerCase().includes(searchQuery.toLowerCase()));
-    return matchesCategory && matchesSearch;
-  });
+  // ── Filter & group ─────────────────────────────────────────────────────────
+  const filteredProducts = useMemo(() => {
+    return products.filter((p) => {
+      const matchCat = selectedCategory === 'All' || p.category === selectedCategory;
+      const q = searchQuery.trim().toLowerCase();
+      const matchSearch = !q ||
+        p.name.toLowerCase().includes(q) ||
+        (p.code && p.code.toLowerCase().includes(q)) ||
+        (p.category && p.category.toLowerCase().includes(q));
+      return matchCat && matchSearch;
+    });
+  }, [products, selectedCategory, searchQuery]);
 
-  const cartTotalCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  // Group by category, preserving category order
+  const grouped = useMemo(() => {
+    const map = new Map();
+    for (const p of filteredProducts) {
+      if (!map.has(p.category)) map.set(p.category, []);
+      map.get(p.category).push(p);
+    }
+    return Array.from(map.entries()); // [[category, [products...]], ...]
+  }, [filteredProducts]);
+
+  const totalItems = products.filter(p => p.in_stock !== 0).length;
+  const cartTotalCount = cart.reduce((s, i) => s + i.quantity, 0);
 
   return (
     <div className="app-layout" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {/* Red & White Navigation */}
       <Navbar
         currentView={currentView}
         setCurrentView={setCurrentView}
@@ -146,75 +147,115 @@ export default function App() {
         onOpenAdminLogin={() => setIsAdminLoginOpen(true)}
       />
 
-      {/* Main View Controller */}
       <main style={{ flex: 1 }}>
         {currentView === 'shop' && (
           <>
-            {/* Festive Hero Banner */}
-            <HeroBanner
-              onShopClick={() => {
-                const el = document.getElementById('catalog-section');
+            {/* ── SHOP BY CATEGORY BAR ── */}
+            <ShopByCategoryBar
+              selectedCategory={selectedCategory}
+              onSelectCategory={(cat) => {
+                setSelectedCategory(cat);
+                setSearchQuery('');
+                const el = document.getElementById('catalog-3col');
                 if (el) el.scrollIntoView({ behavior: 'smooth' });
               }}
-              onSelectCategory={(cat) => setSelectedCategory(cat)}
             />
 
-            {/* Category Filter & Search */}
-            <div id="catalog-section">
-              <CategoryFilter
-                selectedCategory={selectedCategory}
-                onSelectCategory={setSelectedCategory}
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-              />
-            </div>
+            {/* ── 3-COLUMN LAYOUT ── */}
+            <div className="catalog-3col" id="catalog-3col">
 
-            {/* Products Catalog */}
-            <div className="products-container">
-              <div className="catalog-header">
-                <h2>
-                  {selectedCategory === 'All' ? 'All Festive Crackers' : selectedCategory}
-                </h2>
-                <span className="count">
-                  Showing {filteredProducts.length} items
-                </span>
+              {/* LEFT: Category Sidebar */}
+              <aside className="cat-sidebar">
+                <div className="cat-sidebar__header">CATEGORIES</div>
+                <ul className="cat-sidebar__list">
+                  <li
+                    className={`cat-sidebar__item ${selectedCategory === 'All' ? 'cat-sidebar__item--active' : ''}`}
+                    onClick={() => { setSelectedCategory('All'); setSearchQuery(''); }}
+                  >
+                    <span className="cat-sidebar__name">All Products</span>
+                    <span className="cat-sidebar__count">({totalItems} Products)</span>
+                    <span className="cat-sidebar__arrow">›</span>
+                  </li>
+                  {categoryMeta.map(({ category, count }) => (
+                    <li
+                      key={category}
+                      className={`cat-sidebar__item ${selectedCategory === category ? 'cat-sidebar__item--active' : ''}`}
+                      onClick={() => { setSelectedCategory(category); setSearchQuery(''); }}
+                    >
+                      <span className="cat-sidebar__name">{category}</span>
+                      <span className="cat-sidebar__count">({count} Products)</span>
+                      <span className="cat-sidebar__arrow">›</span>
+                    </li>
+                  ))}
+                </ul>
+              </aside>
+
+              {/* CENTER: Product List */}
+              <div className="catalog-center">
+                {/* Header */}
+                <div className="catalog-center__header">
+                  <div className="catalog-center__title">
+                    <Flame size={18} style={{ color: '#e84040' }} />
+                    <span>
+                      {selectedCategory === 'All' ? 'All Products' : selectedCategory}
+                    </span>
+                  </div>
+                  <span className="catalog-center__badge">
+                    {filteredProducts.length} Items
+                  </span>
+                </div>
+
+                {/* Search bar */}
+                <div className="catalog-search-wrap">
+                  <Search size={16} className="catalog-search-icon" />
+                  <input
+                    type="text"
+                    className="catalog-search-input"
+                    placeholder="Search products by name or code..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+
+                {/* Product rows, grouped by category */}
+                {loadingProducts ? (
+                  <div className="catalog-loading">
+                    <div style={{ fontSize: '2.5rem' }}>✨</div>
+                    <p>Loading products...</p>
+                  </div>
+                ) : filteredProducts.length === 0 ? (
+                  <div className="catalog-empty">
+                    <div style={{ fontSize: '2.5rem' }}>🔍</div>
+                    <p>No products found. Try a different search or category.</p>
+                  </div>
+                ) : (
+                  grouped.map(([cat, items]) => (
+                    <div key={cat} className="product-group">
+                      <div className="product-group__banner">{cat}</div>
+                      {items.map((product) => {
+                        const cartItem = cart.find((i) => i.id === product.id);
+                        return (
+                          <ProductRowItem
+                            key={product.id}
+                            product={product}
+                            cartItem={cartItem}
+                            onAddToCart={handleAddToCart}
+                            onUpdateQuantity={handleUpdateQuantity}
+                          />
+                        );
+                      })}
+                    </div>
+                  ))
+                )}
               </div>
 
-              {loadingProducts ? (
-                <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-muted)' }}>
-                  <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>✨</div>
-                  <h3>Loading festive crackers catalog...</h3>
-                </div>
-              ) : filteredProducts.length === 0 ? (
-                <div style={{
-                  textAlign: 'center',
-                  padding: '4rem 1rem',
-                  background: 'var(--pure-white)',
-                  borderRadius: 'var(--radius-lg)',
-                  border: '1px solid var(--border-light)'
-                }}>
-                  <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔍</div>
-                  <h3>No Crackers Found</h3>
-                  <p style={{ color: 'var(--text-muted)' }}>
-                    Try searching with another keyword or select "All" categories.
-                  </p>
-                </div>
-              ) : (
-                <div className="products-grid">
-                  {filteredProducts.map((product) => {
-                    const cartItem = cart.find((i) => i.id === product.id);
-                    return (
-                      <ProductCard
-                        key={product.id}
-                        product={product}
-                        cartItem={cartItem}
-                        onAddToCart={handleAddToCart}
-                        onUpdateQuantity={handleUpdateQuantity}
-                      />
-                    );
-                  })}
-                </div>
-              )}
+              {/* RIGHT: Selected Items Sidebar */}
+              <SelectedItemsSidebar
+                cart={cart}
+                onUpdateQuantity={handleUpdateQuantity}
+                onRemoveItem={handleRemoveCartItem}
+                onOrderNow={() => setIsCheckoutOpen(true)}
+              />
             </div>
           </>
         )}
@@ -258,7 +299,7 @@ export default function App() {
         onProceedToCheckout={() => setIsCheckoutOpen(true)}
       />
 
-      {/* Checkout Modal Form */}
+      {/* Checkout Modal */}
       <CheckoutModal
         isOpen={isCheckoutOpen}
         onClose={() => setIsCheckoutOpen(false)}
@@ -266,7 +307,7 @@ export default function App() {
         onOrderSuccess={handleOrderSuccess}
       />
 
-      {/* Order Success Confetti Modal */}
+      {/* Order Success Modal */}
       {successOrderData && (
         <OrderSuccessModal
           orderData={successOrderData}
@@ -289,7 +330,7 @@ export default function App() {
         }}
       />
 
-      {/* Red & White Festive Footer */}
+      {/* Footer */}
       <footer className="main-footer">
         <div className="footer-container">
           <div className="footer-col">
@@ -327,7 +368,7 @@ export default function App() {
           </div>
 
           <div className="footer-col">
-            <h4>Customer Support & Helpline</h4>
+            <h4>Customer Support &amp; Helpline</h4>
             <p>
               <strong>Helpline:</strong> +91 98765 43210<br />
               <strong>Email:</strong> support@diwalispark.com<br />
@@ -336,7 +377,7 @@ export default function App() {
           </div>
 
           <div className="footer-col">
-            <h4>Safe & Certified</h4>
+            <h4>Safe &amp; Certified</h4>
             <p>
               ✅ CSIR-NEERI Certified Green Crackers<br />
               ✅ Fire-Proof Multi-Layer Packaging<br />
@@ -344,9 +385,8 @@ export default function App() {
             </p>
           </div>
         </div>
-
         <div className="footer-bottom">
-          <p>© 2026 Diwali Spark Fireworks. Designed in festive Red & White. Happy Diwali!</p>
+          <p>© 2026 Diwali Spark Fireworks. Happy Diwali! 🪔</p>
         </div>
       </footer>
     </div>

@@ -18,8 +18,8 @@ router.get('/', async (req, res) => {
     }
 
     if (search && search.trim()) {
-      query += " AND (name LIKE ? OR description LIKE ?)";
-      params.push(`%${search.trim()}%`, `%${search.trim()}%`);
+      query += " AND (name LIKE ? OR description LIKE ? OR code LIKE ?)";
+      params.push(`%${search.trim()}%`, `%${search.trim()}%`, `%${search.trim()}%`);
     }
 
     if (featured === 'true' || featured === '1') {
@@ -30,7 +30,7 @@ router.get('/', async (req, res) => {
       query += " AND in_stock = 1";
     }
 
-    query += " ORDER BY id DESC";
+    query += " ORDER BY category ASC, CAST(code AS INTEGER) ASC";
 
     const products = db.all(query, params);
     res.json({ success: true, count: products.length, products });
@@ -40,13 +40,23 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /api/products/categories - list distinct categories
+// GET /api/products/categories - list distinct categories with counts
 router.get('/categories', async (req, res) => {
   try {
     const db = await getDb();
-    const rows = db.all("SELECT DISTINCT category FROM products ORDER BY category ASC");
-    const categories = rows.map(r => r.category);
-    res.json({ success: true, categories });
+    const rows = db.all(`
+      SELECT category, COUNT(*) as count
+      FROM products
+      WHERE in_stock = 1
+      GROUP BY category
+      ORDER BY category ASC
+    `);
+    const total = rows.reduce((sum, r) => sum + r.count, 0);
+    res.json({
+      success: true,
+      categories: rows,
+      total
+    });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch categories.' });
   }
@@ -69,7 +79,7 @@ router.get('/:id', async (req, res) => {
 // POST /api/products - Admin create product
 router.post('/', authenticateAdmin, async (req, res) => {
   try {
-    const { name, category, price, mrp, image, description, pack_size, in_stock, featured } = req.body;
+    const { code, name, category, content, price, mrp, image, description, pack_size, in_stock, featured } = req.body;
 
     if (!name || !category || price === undefined) {
       return res.status(400).json({ error: 'Name, category, and price are required.' });
@@ -77,14 +87,16 @@ router.post('/', authenticateAdmin, async (req, res) => {
 
     const db = await getDb();
     const result = db.run(`
-      INSERT INTO products (name, category, price, mrp, image, description, pack_size, in_stock, featured)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO products (code, name, category, content, price, mrp, image, description, pack_size, in_stock, featured)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
+      code ? code.trim() : null,
       name.trim(),
       category.trim(),
+      content ? content.trim() : '1 Box',
       Number(price) || 0,
       Number(mrp) || Number(price) || 0,
-      image ? image.trim() : 'https://images.unsplash.com/photo-1514565131-fce0801e5785?w=500&auto=format&fit=crop&q=60',
+      image ? image.trim() : '',
       description ? description.trim() : '',
       pack_size ? pack_size.trim() : '1 Box',
       in_stock === undefined ? 1 : (in_stock ? 1 : 0),
@@ -102,7 +114,7 @@ router.post('/', authenticateAdmin, async (req, res) => {
 // PUT /api/products/:id - Admin update product
 router.put('/:id', authenticateAdmin, async (req, res) => {
   try {
-    const { name, category, price, mrp, image, description, pack_size, in_stock, featured } = req.body;
+    const { code, name, category, content, price, mrp, image, description, pack_size, in_stock, featured } = req.body;
     const db = await getDb();
 
     const existing = db.get("SELECT * FROM products WHERE id = ?", [req.params.id]);
@@ -112,8 +124,10 @@ router.put('/:id', authenticateAdmin, async (req, res) => {
 
     db.run(`
       UPDATE products SET
+        code = ?,
         name = ?,
         category = ?,
+        content = ?,
         price = ?,
         mrp = ?,
         image = ?,
@@ -123,8 +137,10 @@ router.put('/:id', authenticateAdmin, async (req, res) => {
         featured = ?
       WHERE id = ?
     `, [
+      code !== undefined ? code : existing.code,
       name !== undefined ? name.trim() : existing.name,
       category !== undefined ? category.trim() : existing.category,
+      content !== undefined ? content.trim() : existing.content,
       price !== undefined ? Number(price) : existing.price,
       mrp !== undefined ? Number(mrp) : existing.mrp,
       image !== undefined ? image.trim() : existing.image,
