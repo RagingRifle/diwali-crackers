@@ -64,7 +64,7 @@ function AdminLoginPage({ onLoginSuccess }) {
             Admin Portal
           </h1>
           <p style={{ color: '#888', fontSize: '0.85rem', marginTop: '0.3rem' }}>
-            Diwali Spark — Staff Only
+            Dinosaur Crackers — Staff Only
           </p>
         </div>
 

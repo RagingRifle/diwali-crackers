@@ -37,7 +37,7 @@ const TRUST = [
 const TESTIMONIALS = [
   { name: 'Priya R.', city: 'Chennai', stars: 5, text: 'Amazing quality sparklers! My kids loved every bit of it. Packaging was super safe and delivery was on time. Will order again!' },
   { name: 'Rahul M.', city: 'Bangalore', stars: 5, text: 'Best Sivakasi crackers online. The gift box was worth every rupee. Order tracking feature is fantastic!' },
-  { name: 'Deepa S.', city: 'Hyderabad', stars: 5, text: 'Bought the family combo — absolutely delightful! Eco-friendly and safe. Highly recommend Diwali Spark.' },
+  { name: 'Deepa S.', city: 'Hyderabad', stars: 5, text: 'Bought the family combo — absolutely delightful! Eco-friendly and safe. Highly recommend Dinosaur Crackers.' },
 ];
 
 /* ─── Category emoji map ─────────────────────────────────────────────────── */
@@ -55,12 +55,23 @@ export default function HomePage({ setCurrentView, onSelectCategory, onAddToCart
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loadingFeatured, setLoadingFeatured] = useState(true);
 
-  /* Fetch featured products on mount */
+  /* Fetch featured products on mount (crackers only, exclude combos) */
   useEffect(() => {
-    fetch('/api/products?featured=true&inStockOnly=true')
+    fetch('/api/products?featured=true&inStockOnly=true&isCombo=false')
       .then((r) => r.json())
       .then((data) => {
-        if (data.success) setFeaturedProducts(data.products.slice(0, 6));
+        if (data.success && data.products && data.products.length > 0) {
+          setFeaturedProducts(data.products.slice(0, 8));
+        } else {
+          // Fallback to top in-stock crackers if none explicitly marked featured
+          fetch('/api/products?inStockOnly=true&isCombo=false')
+            .then((r) => r.json())
+            .then((fallback) => {
+              if (fallback.success && fallback.products) {
+                setFeaturedProducts(fallback.products.slice(0, 8));
+              }
+            });
+        }
       })
       .catch(() => {})
       .finally(() => setLoadingFeatured(false));
@@ -96,12 +107,12 @@ export default function HomePage({ setCurrentView, onSelectCategory, onAddToCart
           <h1 className="hp-hero__title">
             Light Up Your <br />
             <span className="hp-hero__title-highlight">Diwali 2026</span><br />
-            with Authentic Sivakasi Crackers
+            with Dinosaur Crackers
           </h1>
 
           <p className="hp-hero__subtitle">
             Premium quality eco-certified fireworks delivered safely to your doorstep.
-            Sparklers, rockets, chakras, gift boxes &amp; more — direct from the cracker capital of India.
+            Sparklers, rockets, ground chakkars, flower pots &amp; sky shots — direct from Sivakasi.
           </p>
 
           {/* CTA Buttons */}
@@ -111,9 +122,9 @@ export default function HomePage({ setCurrentView, onSelectCategory, onAddToCart
               Shop All Crackers
               <ArrowRight size={16} />
             </button>
-            <button className="hp-btn hp-btn--secondary" onClick={() => goShop('Gift boxes')}>
-              <Gift size={18} />
-              Explore Gift Boxes
+            <button className="hp-btn hp-btn--secondary" onClick={() => goShop('Sparklers')}>
+              <Sparkles size={18} />
+              Explore Sparklers
             </button>
           </div>
 
@@ -222,21 +233,21 @@ export default function HomePage({ setCurrentView, onSelectCategory, onAddToCart
       <section className="hp-feature-banner">
         <div className="hp-feature-banner__inner">
           <div className="hp-feature-banner__text">
-            <div className="hp-feature-banner__badge">🎆 Limited Time Offer</div>
-            <h2>Diwali Mega Gift Boxes</h2>
+            <div className="hp-feature-banner__badge">🎆 Special Festive Offer</div>
+            <h2>Authentic Sivakasi Crackers</h2>
             <p>
-              Curated assortment packs — sparklers, flower pots, sky shots, whistling rockets
-              &amp; more. Perfect for the whole family. <strong>Up to 50% OFF</strong> this festive season!
+              Light up your celebrations with genuine sparklers, flower pots, sky shots, ground chakkars
+              &amp; sound crackers. <strong>Up to 80% OFF</strong> factory direct pricing from Dinosaur Crackers!
             </p>
-            <button className="hp-btn hp-btn--primary" onClick={() => goShop('Gift boxes')}>
-              <Gift size={18} /> Grab the Deal <ArrowRight size={16} />
+            <button className="hp-btn hp-btn--primary" onClick={() => goShop()}>
+              <Flame size={18} /> Shop Crackers Now <ArrowRight size={16} />
             </button>
           </div>
           <div className="hp-feature-banner__visual">
-            <div className="hp-feature-banner__burst">50% OFF</div>
+            <div className="hp-feature-banner__burst">80% OFF</div>
             <div className="hp-feature-banner__emojis">
               <span>🎆</span><span>✨</span><span>🎇</span>
-              <span>🪔</span><span>🎁</span><span>🚀</span>
+              <span>🪔</span><span>🧨</span><span>🚀</span>
             </div>
           </div>
         </div>
@@ -246,7 +257,7 @@ export default function HomePage({ setCurrentView, onSelectCategory, onAddToCart
       <section className="hp-section hp-section--light">
         <div className="hp-section__inner">
           <div className="hp-section__header">
-            <h2 className="hp-section__title">Why Choose Diwali Spark?</h2>
+            <h2 className="hp-section__title">Why Choose Dinosaur Crackers?</h2>
             <p className="hp-section__sub">Your trust is our biggest celebration</p>
           </div>
           <div className="hp-trust">

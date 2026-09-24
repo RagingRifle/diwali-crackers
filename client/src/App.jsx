@@ -306,7 +306,7 @@ export default function App() {
           <div className="footer-col">
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
               <span style={{ fontSize: '1.5rem' }}>🪔</span>
-              <h3 style={{ color: 'var(--primary-red)', fontWeight: 800 }}>DIWALI SPARK</h3>
+              <h3 style={{ color: 'var(--primary-red)', fontWeight: 800 }}>DINOSAUR CRACKERS</h3>
             </div>
             <p>
               Direct Sivakasi fireworks delivery celebrating safe and joyous festivities across India. Certified green crackers with quality assurance.
@@ -350,7 +350,7 @@ export default function App() {
           </div>
         </div>
         <div className="footer-bottom">
-          <p>© 2026 Diwali Spark Fireworks. Happy Diwali! 🪔</p>
+          <p>© 2026 Dinosaur Crackers. Happy Diwali! 🪔</p>
         </div>
       </footer>
     </div>

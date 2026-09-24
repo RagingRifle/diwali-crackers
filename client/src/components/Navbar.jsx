@@ -1,14 +1,11 @@
 import React from 'react';
-import { ShoppingBag, Search, Sparkles, Truck, ShieldCheck, UserCheck, LogOut } from 'lucide-react';
+import { ShoppingBag, Sparkles, Truck } from 'lucide-react';
 
 export default function Navbar({
   currentView,
   setCurrentView,
   cartCount,
   setIsCartOpen,
-  adminUser,
-  onAdminLogout,
-  onOpenAdminLogin
 }) {
   return (
     <header className="header-wrapper">
@@ -18,7 +15,7 @@ export default function Navbar({
         <span>•</span>
         <span className="badge">Diwali 2026 Festive Sale</span>
         <span>•</span>
-        <span>🚀 Express Doorstep Dispatch & Real-Time Tracking</span>
+        <span>🚀 Express Doorstep Dispatch &amp; Real-Time Tracking</span>
       </div>
 
       {/* Main White & Red Navbar */}
@@ -30,8 +27,8 @@ export default function Navbar({
               🪔
             </div>
             <div className="brand-text">
-              <h1>DIWALI SPARK</h1>
-              <span>Premium Fireworks & Crackers</span>
+              <h1>DINOSAUR CRACKERS</h1>
+              <span>Premium Fireworks &amp; Crackers</span>
             </div>
           </div>
 
@@ -63,27 +60,6 @@ export default function Navbar({
 
           {/* Right Action Buttons */}
           <div className="nav-actions">
-            {/* Admin Access Button */}
-            {adminUser ? (
-              <button
-                className={`nav-link ${currentView === 'admin' ? 'active' : ''}`}
-                onClick={() => setCurrentView('admin')}
-                style={{ border: '1px solid var(--primary-red)', color: 'var(--primary-red)' }}
-              >
-                <UserCheck size={16} />
-                <span>Admin Panel</span>
-              </button>
-            ) : (
-              <button
-                className="nav-link"
-                onClick={onOpenAdminLogin}
-                title="Store Admin Login"
-              >
-                <ShieldCheck size={16} />
-                <span>Admin Login</span>
-              </button>
-            )}
-
             {/* Cart Button */}
             <button
               className="cart-btn"

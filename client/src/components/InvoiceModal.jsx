@@ -239,7 +239,7 @@ export default function InvoiceModal({ isOpen, onClose, order }) {
       <div class="inv-logo">
         <div style="display:flex; align-items:center; gap:5px;">
           <span style="font-size:18px;">🪔</span>
-          <h1>DIWALI SPARK FIREWORKS</h1>
+          <h1>DINOSAUR CRACKERS FIREWORKS</h1>
         </div>
         <p>Direct Sivakasi Factory Fireworks • Certified CSIR-NEERI Green Crackers</p>
         <p>Hub: 4/128 Fireworks Road, Sivakasi - 626123, Tamil Nadu • Helpline: +91 98765 43210</p>
@@ -300,7 +300,7 @@ export default function InvoiceModal({ isOpen, onClose, order }) {
         <strong style="color:#111;">Safety &amp; Compliance Notes:</strong><br />
         • Certified Green Crackers with low smoke and eco-friendly composition.<br />
         • Store in a cool, dry place away from children. Always light in open areas.<br />
-        • Thank you for celebrating with Diwali Spark Fireworks!
+        • Thank you for celebrating with Dinosaur Crackers Fireworks!
       </div>
 
       <table class="summary-table">
@@ -333,7 +333,7 @@ export default function InvoiceModal({ isOpen, onClose, order }) {
     <!-- Footer -->
     <div class="inv-footer">
       <div>
-        <p style="font-weight:700; color:#b91c1c;">Happy &amp; Safe Diwali from DIWALI SPARK! 🪔✨</p>
+        <p style="font-weight:700; color:#b91c1c;">Happy &amp; Safe Diwali from DINOSAUR CRACKERS! 🪔✨</p>
         <p style="color:#9ca3af; font-size:8.5px;">Computer generated festive tax invoice / estimate.</p>
       </div>
 
@@ -426,7 +426,7 @@ export default function InvoiceModal({ isOpen, onClose, order }) {
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <span style={{ fontSize: '1.4rem' }}>🪔</span>
-                  <h1 style={{ margin: 0, color: '#b91c1c', fontSize: '1.15rem', fontWeight: 900 }}>DIWALI SPARK FIREWORKS</h1>
+                  <h1 style={{ margin: 0, color: '#b91c1c', fontSize: '1.15rem', fontWeight: 900 }}>DINOSAUR CRACKERS FIREWORKS</h1>
                 </div>
                 <p style={{ margin: '2px 0 0', color: '#6b7280', fontSize: '0.75rem' }}>
                   Direct Sivakasi Factory Fireworks • Certified CSIR-NEERI Green Crackers
@@ -540,7 +540,7 @@ export default function InvoiceModal({ isOpen, onClose, order }) {
                 <strong style={{ color: '#111' }}>Safety &amp; Compliance Notes:</strong><br />
                 • Certified CSIR-NEERI Green Crackers with low smoke emissions.<br />
                 • Store in a cool dry place away from children. Always light in open areas.<br />
-                • Thank you for celebrating with Diwali Spark Fireworks!
+                • Thank you for celebrating with Dinosaur Crackers Fireworks!
               </div>
 
               <table style={{ width: '240px', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
@@ -575,7 +575,7 @@ export default function InvoiceModal({ isOpen, onClose, order }) {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '12px', paddingTop: '8px', borderTop: '1px solid #e5e7eb' }}>
               <div>
                 <p style={{ margin: 0, fontSize: '0.78rem', fontWeight: 700, color: '#b91c1c' }}>
-                  Happy &amp; Safe Diwali from DIWALI SPARK! 🪔✨
+                  Happy &amp; Safe Diwali from DINOSAUR CRACKERS! 🪔✨
                 </p>
                 <p style={{ margin: '1px 0 0', fontSize: '0.68rem', color: '#9ca3af' }}>
                   Computer generated festive tax invoice / estimate.
