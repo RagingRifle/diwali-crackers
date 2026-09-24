@@ -25,16 +25,6 @@ function useCountdown(targetDate) {
   return time;
 }
 
-/* ─── Category Showcase Data ─────────────────────────────────────────────── */
-const CATEGORIES = [
-  { emoji: '✨', name: 'Sparklers', desc: 'Hand sparklers for kids & adults', color: '#FEF3C7', border: '#F59E0B' },
-  { emoji: '🚀', name: 'Sky Shots', desc: 'High-altitude aerial rockets', color: '#EDE9FE', border: '#8B5CF6' },
-  { emoji: '🌺', name: 'Flower Pots', desc: 'Ground blooming flowers of light', color: '#D1FAE5', border: '#10B981' },
-  { emoji: '🎆', name: 'Ground Chakras', desc: 'Spinning wheel fireworks', color: '#DBEAFE', border: '#2563EB' },
-  { emoji: '🎁', name: 'Gift Boxes', desc: 'Curated family assortment packs', color: '#FFE4E6', border: '#D32F2F' },
-  { emoji: '🔥', name: 'Family Combos', desc: 'All-in-one celebration bundles', color: '#FEF3C7', border: '#D97706' },
-];
-
 /* ─── Trust Badges ──────────────────────────────────────────────────────── */
 const TRUST = [
   { icon: <Shield size={28} />, title: 'CSIR-NEERI Certified', desc: 'Eco-friendly green crackers approved by top environmental body' },
@@ -50,13 +40,41 @@ const TESTIMONIALS = [
   { name: 'Deepa S.', city: 'Hyderabad', stars: 5, text: 'Bought the family combo — absolutely delightful! Eco-friendly and safe. Highly recommend Diwali Spark.' },
 ];
 
-export default function HomePage({ setCurrentView, onSelectCategory }) {
+/* ─── Category emoji map ─────────────────────────────────────────────────── */
+const CATEGORY_EMOJI = {
+  'Sparklers': '✨',
+  'Sky Shots': '🚀',
+  'Flower Pots': '🌺',
+  'Ground Chakras': '🎆',
+  'Gift boxes': '🎁',
+  'Family Combos': '🔥',
+};
+
+export default function HomePage({ setCurrentView, onSelectCategory, onAddToCart }) {
   const { days, hours, minutes, seconds } = useCountdown('2026-10-19T00:00:00');
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [loadingFeatured, setLoadingFeatured] = useState(true);
+
+  /* Fetch featured products on mount */
+  useEffect(() => {
+    fetch('/api/products?featured=true&inStockOnly=true')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success) setFeaturedProducts(data.products.slice(0, 6));
+      })
+      .catch(() => {})
+      .finally(() => setLoadingFeatured(false));
+  }, []);
 
   const goShop = (cat) => {
     if (cat && onSelectCategory) onSelectCategory(cat);
     setCurrentView('shop');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleAddToCart = (e, product) => {
+    e.stopPropagation();
+    if (onAddToCart) onAddToCart(product);
   };
 
   return (
@@ -137,27 +155,65 @@ export default function HomePage({ setCurrentView, onSelectCategory }) {
         ))}
       </section>
 
-      {/* ══════════════════ CATEGORY SHOWCASE ══════════════════ */}
+      {/* ══════════════════ FEATURED CRACKERS ══════════════════ */}
       <section className="hp-section">
         <div className="hp-section__inner">
           <div className="hp-section__header">
-            <h2 className="hp-section__title">Shop by Category</h2>
-            <p className="hp-section__sub">Browse our wide range of certified premium fireworks</p>
+            <h2 className="hp-section__title">⭐ Featured Crackers</h2>
+            <p className="hp-section__sub">Handpicked bestsellers — loved by thousands of families</p>
           </div>
-          <div className="hp-categories">
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat.name}
-                className="hp-cat-card"
-                style={{ '--cat-bg': cat.color, '--cat-border': cat.border }}
-                onClick={() => goShop(cat.name)}
-              >
-                <span className="hp-cat-card__emoji">{cat.emoji}</span>
-                <h3 className="hp-cat-card__name">{cat.name}</h3>
-                <p className="hp-cat-card__desc">{cat.desc}</p>
-                <span className="hp-cat-card__cta">Shop Now →</span>
+
+          {loadingFeatured ? (
+            <div className="hp-featured-grid">
+              {[...Array(6)].map((_, i) => (
+                <div className="hp-featured-skeleton" key={i} />
+              ))}
+            </div>
+          ) : featuredProducts.length === 0 ? (
+            <div className="hp-featured-empty">
+              <p>No featured products yet. Check back soon! 🎆</p>
+              <button className="hp-btn hp-btn--primary" onClick={() => goShop()}>
+                Browse All Crackers <ArrowRight size={16} />
               </button>
-            ))}
+            </div>
+          ) : (
+            <div className="hp-featured-grid">
+              {featuredProducts.map((product) => (
+                <div className="hp-featured-card" key={product.id} onClick={() => goShop()}>
+                  <div className="hp-featured-card__badge">⭐ Featured</div>
+                  <div className="hp-featured-card__emoji">
+                    {CATEGORY_EMOJI[product.category] || '🧨'}
+                  </div>
+                  <div className="hp-featured-card__body">
+                    <span className="hp-featured-card__cat">{product.category}</span>
+                    <h3 className="hp-featured-card__name">{product.name}</h3>
+                    {product.description && (
+                      <p className="hp-featured-card__desc">{product.description}</p>
+                    )}
+                    <div className="hp-featured-card__footer">
+                      <div className="hp-featured-card__price">
+                        <span className="hp-featured-card__price-val">₹{product.price}</span>
+                        {product.unit && (
+                          <span className="hp-featured-card__price-unit"> / {product.unit}</span>
+                        )}
+                      </div>
+                      <button
+                        className="hp-btn hp-btn--primary hp-btn--sm"
+                        onClick={(e) => handleAddToCart(e, product)}
+                      >
+                        Add to Cart
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+            <button className="hp-btn hp-btn--secondary" onClick={() => goShop()}>
+              View All Crackers <ArrowRight size={16} />
+            </button>
           </div>
         </div>
       </section>

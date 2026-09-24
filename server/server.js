@@ -39,9 +39,18 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Client SPA fallback
+// Admin panel — serve admin.html for /admin and /admin/*
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(clientDist, 'admin.html'));
+});
+app.get('/admin/*', (req, res) => {
+  res.sendFile(path.join(clientDist, 'admin.html'));
+});
+
+// Customer SPA fallback (exclude /api and /admin)
 app.get('*', (req, res, next) => {
   if (req.url.startsWith('/api')) return next();
+  if (req.url.startsWith('/admin')) return next();
   res.sendFile(path.join(clientDist, 'index.html'));
 });
 

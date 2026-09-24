@@ -7,8 +7,6 @@ import CartDrawer from './components/CartDrawer';
 import CheckoutModal from './components/CheckoutModal';
 import OrderSuccessModal from './components/OrderSuccessModal';
 import TrackOrderPage from './components/TrackOrderPage';
-import AdminLogin from './components/admin/AdminLogin';
-import AdminDashboard from './components/admin/AdminDashboard';
 import InvoiceModal from './components/InvoiceModal';
 import { Search, Flame } from 'lucide-react';
 import HomePage from './components/HomePage';
@@ -34,17 +32,7 @@ export default function App() {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [successOrderData, setSuccessOrderData] = useState(null);
   const [invoiceOrder, setInvoiceOrder] = useState(null);
-  const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
   const [trackInitialQuery, setTrackInitialQuery] = useState('');
-
-  // Admin
-  const [adminUser, setAdminUser] = useState(() => {
-    try {
-      const saved = localStorage.getItem('diwali_admin_user');
-      const token = localStorage.getItem('diwali_admin_token');
-      return saved && token ? JSON.parse(saved) : null;
-    } catch { return null; }
-  });
 
   // Persist cart
   useEffect(() => {
@@ -105,13 +93,6 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleAdminLogout = () => {
-    localStorage.removeItem('diwali_admin_token');
-    localStorage.removeItem('diwali_admin_user');
-    setAdminUser(null);
-    setCurrentView('shop');
-  };
-
   // ── Filter & group ─────────────────────────────────────────────────────────
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
@@ -145,9 +126,6 @@ export default function App() {
         setCurrentView={setCurrentView}
         cartCount={cartTotalCount}
         setIsCartOpen={setIsCartOpen}
-        adminUser={adminUser}
-        onAdminLogout={handleAdminLogout}
-        onOpenAdminLogin={() => setIsAdminLoginOpen(true)}
       />
 
       <main style={{ flex: 1 }}>
@@ -158,6 +136,7 @@ export default function App() {
               setSelectedCategory(cat);
               setSearchQuery('');
             }}
+            onAddToCart={handleAddToCart}
           />
         )}
         {currentView === 'shop' && (
@@ -278,30 +257,6 @@ export default function App() {
             onOpenInvoice={(order) => setInvoiceOrder(order)}
           />
         )}
-
-        {currentView === 'admin' && (
-          adminUser ? (
-            <AdminDashboard
-              adminUser={adminUser}
-              onLogout={handleAdminLogout}
-              onProductChange={fetchProducts}
-            />
-          ) : (
-            <div style={{ textAlign: 'center', padding: '5rem 1rem' }}>
-              <h2>Admin Access Required</h2>
-              <p style={{ color: 'var(--text-muted)', margin: '1rem 0 1.5rem' }}>
-                Please log in with admin credentials to access the management dashboard.
-              </p>
-              <button
-                className="btn-submit-order"
-                style={{ maxWidth: '240px', margin: '0 auto' }}
-                onClick={() => setIsAdminLoginOpen(true)}
-              >
-                Open Admin Login
-              </button>
-            </div>
-          )
-        )}
       </main>
 
       {/* Cart Drawer */}
@@ -335,16 +290,6 @@ export default function App() {
           onOpenInvoice={(order) => setInvoiceOrder(order)}
         />
       )}
-
-      {/* Admin Login Modal */}
-      <AdminLogin
-        isOpen={isAdminLoginOpen}
-        onClose={() => setIsAdminLoginOpen(false)}
-        onLoginSuccess={(user) => {
-          setAdminUser(user);
-          setCurrentView('admin');
-        }}
-      />
 
       {/* Standalone Printable & Downloadable Invoice Modal */}
       {invoiceOrder && (
@@ -382,12 +327,6 @@ export default function App() {
                 onClick={() => { setCurrentView('track'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
               >
                 🚚 Live Order Tracking
-              </span>
-              <span
-                style={{ cursor: 'pointer', color: 'var(--text-main)' }}
-                onClick={() => setIsAdminLoginOpen(true)}
-              >
-                🔒 Store Admin Portal
               </span>
             </div>
           </div>
