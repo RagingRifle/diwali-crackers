@@ -79,84 +79,34 @@ export default function HomePage({ setCurrentView, onSelectCategory, onAddToCart
   return (
     <div className="homepage">
 
-      {/* ══════════════════ HERO SECTION (WITH UPLOADED BANNER) ══════════════════ */}
-      <section className="hp-hero" style={{ minHeight: 'auto', padding: '1rem 1rem 0' }}>
-        <div style={{ maxWidth: '1240px', margin: '0 auto', width: '100%' }}>
-          {/* Banner Graphic Image */}
-          <div style={{
-            position: 'relative',
-            borderRadius: '16px',
-            overflow: 'hidden',
-            boxShadow: '0 8px 30px rgba(0,0,0,0.18)',
-            border: '2px solid rgba(254, 240, 138, 0.4)',
-            background: '#111',
-          }}>
-            <img
-              src={heroBg}
-              alt="Dinosaur Crackers - This Diwali Light Up Your World - Up to 85% OFF"
-              style={{
-                width: '100%',
-                height: 'auto',
-                display: 'block',
-                maxHeight: '520px',
-                objectFit: 'cover',
-                objectPosition: 'center',
-              }}
-            />
+      {/* ══════════════════ HERO SECTION ══════════════════ */}
+      <section className="hp-hero">
+        <img src={heroBg} alt="Diwali 2026 Celebration" className="hp-hero__bg" />
+        <div className="hp-hero__overlay" />
+        <div className="hp-hero__content">
+          <div className="hp-hero__badge"><Sparkles size={15} /><span>Diwali 2026 — Festival of Lights</span></div>
+          <h1 className="hp-hero__title">Light Up Your <br /><span className="hp-hero__title-highlight">Diwali 2026</span><br />with Dinosaur Crackers</h1>
+          <p className="hp-hero__subtitle">Premium quality fireworks delivered safely to your doorstep. Sparklers, rockets, ground chakkars, flower pots &amp; sky shots — direct from Sivakasi.</p>
+          <div className="hp-hero__actions">
+            <button className="hp-btn hp-btn--primary" onClick={() => goShop()}><Flame size={18} />Shop All Crackers<ArrowRight size={16} /></button>
+            <button className="hp-btn hp-btn--secondary" onClick={() => goShop('Sparklers')}><Sparkles size={18} />Explore Sparklers</button>
           </div>
-
-          {/* Quick Hero Action Bar & Countdown Bar */}
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '1rem',
-            padding: '1.25rem 0.5rem',
-          }}>
-            {/* Action Buttons */}
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-              <button
-                className="hp-btn hp-btn--primary"
-                onClick={() => goShop()}
-                style={{ padding: '0.75rem 1.5rem', fontSize: '1rem' }}
-              >
-                <Flame size={20} />
-                <span>Shop All Crackers</span>
-                <ArrowRight size={18} />
-              </button>
-              <button
-                className="hp-btn hp-btn--secondary"
-                onClick={() => goShop('Combo Bundles')}
-                style={{ padding: '0.75rem 1.25rem', fontSize: '0.95rem' }}
-              >
-                <Sparkles size={18} />
-                <span>View Combos (85% OFF)</span>
-              </button>
-            </div>
-
-            {/* Countdown Badge */}
-            <div style={{
-              background: 'linear-gradient(135deg, #7f1d1d, #991b1b)',
-              color: '#fff',
-              padding: '0.65rem 1.25rem',
-              borderRadius: '12px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '1rem',
-              boxShadow: '0 4px 12px rgba(185, 28, 28, 0.25)',
-            }}>
-              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fef08a' }}>
-                🪔 Diwali 2026 Countdown:
-              </span>
-              <div style={{ display: 'flex', gap: '0.5rem', fontWeight: 800 }}>
-                {[['D', days], ['H', hours], ['M', minutes], ['S', seconds]].map(([lbl, val]) => (
-                  <span key={lbl} style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '4px', fontSize: '0.88rem' }}>
-                    {String(val).padStart(2, '0')}{lbl}
-                  </span>
-                ))}
+          <div className="hp-hero__pills">
+            <span className="hp-pill">✨ 100% Quality Assured</span>
+            <span className="hp-pill">🚚 Safe and Secure Packaging</span>
+            <span className="hp-pill">📦 Doorstep Delivery</span>
+            <span className="hp-pill">📱 Live Tracking</span>
+          </div>
+        </div>
+        <div className="hp-countdown">
+          <div className="hp-countdown__label">🪔 Diwali 2026 Countdown</div>
+          <div className="hp-countdown__timer">
+            {[['Days', days], ['Hrs', hours], ['Min', minutes], ['Sec', seconds]].map(([label, val]) => (
+              <div className="hp-countdown__unit" key={label}>
+                <span className="hp-countdown__num">{String(val).padStart(2, '0')}</span>
+                <span className="hp-countdown__lbl">{label}</span>
               </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
