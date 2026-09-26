@@ -122,8 +122,28 @@ function initTables(db) {
       password_hash TEXT NOT NULL,
       role TEXT DEFAULT 'admin'
     );
+
+    CREATE TABLE IF NOT EXISTS settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL,
+      updated_at TEXT DEFAULT (datetime('now'))
+    );
   `);
   db.save();
+
+  // Seed default settings if not exists
+  try {
+    const topBar = db.get("SELECT * FROM settings WHERE key = ?", ['top_announcement_bar']);
+    if (!topBar) {
+      db.run("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", [
+        'top_announcement_bar',
+        '✨ Sivakasi Fresh Quality Crackers • Diwali 2026 Festive Sale • 🚀 Express Doorstep Dispatch & Real-Time Tracking'
+      ]);
+      console.log('Seeded default announcement bar setting');
+    }
+  } catch (e) {
+    console.error('Error seeding settings:', e.message);
+  }
 
   // Migrations for existing databases
   try {

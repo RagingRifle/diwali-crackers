@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import heroBg from '../assets/diwali_hero.jpg';
 
-/* ─── Countdown to Diwali 2026 (Oct 19, 2026) ───────────────────────────── */
+/* ─── Countdown to Diwali 2026 (Nov 8, 2026) ────────────────────────────── */
 function useCountdown(targetDate) {
   const calc = () => {
     const diff = new Date(targetDate) - new Date();
@@ -19,17 +19,18 @@ function useCountdown(targetDate) {
   };
   const [time, setTime] = useState(calc);
   useEffect(() => {
+    setTime(calc());
     const id = setInterval(() => setTime(calc()), 1000);
     return () => clearInterval(id);
-  }, []);
+  }, [targetDate]);
   return time;
 }
 
 /* ─── Trust Badges ──────────────────────────────────────────────────────── */
 const TRUST = [
-  { icon: <Shield size={28} />, title: 'CSIR-NEERI Certified', desc: 'Eco-friendly green crackers approved by top environmental body' },
-  { icon: <Truck size={28} />,  title: 'Express Delivery',     desc: 'Fire-proof multi-layer packaging shipped from Sivakasi' },
-  { icon: <Star size={28} />,   title: '10,000+ Happy Families', desc: 'Trusted by customers across India for 8+ festive seasons' },
+  { icon: <Shield size={28} />, title: 'Premium Sivakasi Quality', desc: 'Top quality Sivakasi fireworks tested for high performance & safety' },
+  { icon: <Truck size={28} />,  title: 'Express Delivery',     desc: 'Safe and secure packaging shipped directly from Sivakasi' },
+  { icon: <Star size={28} />,   title: '2,000+ Happy Families', desc: 'Trusted by customers across India for 5+ festive seasons' },
   { icon: <Zap size={28} />,    title: 'Live Order Tracking',   desc: 'Track your order anytime with your mobile number' },
 ];
 
@@ -37,7 +38,7 @@ const TRUST = [
 const TESTIMONIALS = [
   { name: 'Priya R.', city: 'Chennai', stars: 5, text: 'Amazing quality sparklers! My kids loved every bit of it. Packaging was super safe and delivery was on time. Will order again!' },
   { name: 'Rahul M.', city: 'Bangalore', stars: 5, text: 'Best Sivakasi crackers online. The gift box was worth every rupee. Order tracking feature is fantastic!' },
-  { name: 'Deepa S.', city: 'Hyderabad', stars: 5, text: 'Bought the family combo — absolutely delightful! Eco-friendly and safe. Highly recommend Dinosaur Crackers.' },
+  { name: 'Deepa S.', city: 'Hyderabad', stars: 5, text: 'Bought the family combo — absolutely delightful! High quality and safe. Highly recommend Dinosaur Crackers.' },
 ];
 
 /* ─── Category emoji map ─────────────────────────────────────────────────── */
@@ -51,7 +52,7 @@ const CATEGORY_EMOJI = {
 };
 
 export default function HomePage({ setCurrentView, onSelectCategory, onAddToCart }) {
-  const { days, hours, minutes, seconds } = useCountdown('2026-10-19T00:00:00');
+  const { days, hours, minutes, seconds } = useCountdown('2026-11-08T00:00:00');
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loadingFeatured, setLoadingFeatured] = useState(true);
 
@@ -111,7 +112,7 @@ export default function HomePage({ setCurrentView, onSelectCategory, onAddToCart
           </h1>
 
           <p className="hp-hero__subtitle">
-            Premium quality eco-certified fireworks delivered safely to your doorstep.
+            Premium quality fireworks delivered safely to your doorstep.
             Sparklers, rockets, ground chakkars, flower pots &amp; sky shots — direct from Sivakasi.
           </p>
 
@@ -130,8 +131,8 @@ export default function HomePage({ setCurrentView, onSelectCategory, onAddToCart
 
           {/* Feature pills */}
           <div className="hp-hero__pills">
-            <span className="hp-pill">✅ 100% Eco-Friendly</span>
-            <span className="hp-pill">🚚 Safe Packaging</span>
+            <span className="hp-pill">✨ 100% Quality Assured</span>
+            <span className="hp-pill">🚚 Safe and Secure Packaging</span>
             <span className="hp-pill">📦 Doorstep Delivery</span>
             <span className="hp-pill">📱 Live Tracking</span>
           </div>
@@ -154,10 +155,9 @@ export default function HomePage({ setCurrentView, onSelectCategory, onAddToCart
       {/* ══════════════════ STATS BAR ══════════════════ */}
       <section className="hp-stats">
         {[
-          { val: '10,000+', label: 'Happy Customers' },
-          { val: '50+', label: 'Product Varieties' },
-          { val: '8+', label: 'Years of Trust' },
-          { val: '100%', label: 'Eco-Certified' },
+          { val: '2k+', label: 'Happy Customers' },
+          { val: '200+', label: 'Product Varieties' },
+          { val: '5+', label: 'Years of Trust' },
         ].map(({ val, label }) => (
           <div className="hp-stats__item" key={label}>
             <span className="hp-stats__val">{val}</span>
@@ -189,35 +189,60 @@ export default function HomePage({ setCurrentView, onSelectCategory, onAddToCart
             </div>
           ) : (
             <div className="hp-featured-grid">
-              {featuredProducts.map((product) => (
-                <div className="hp-featured-card" key={product.id} onClick={() => goShop()}>
-                  <div className="hp-featured-card__badge">⭐ Featured</div>
-                  <div className="hp-featured-card__emoji">
-                    {CATEGORY_EMOJI[product.category] || '🧨'}
-                  </div>
-                  <div className="hp-featured-card__body">
-                    <span className="hp-featured-card__cat">{product.category}</span>
-                    <h3 className="hp-featured-card__name">{product.name}</h3>
-                    {product.description && (
-                      <p className="hp-featured-card__desc">{product.description}</p>
-                    )}
-                    <div className="hp-featured-card__footer">
-                      <div className="hp-featured-card__price">
-                        <span className="hp-featured-card__price-val">₹{product.price}</span>
-                        {product.unit && (
-                          <span className="hp-featured-card__price-unit"> / {product.unit}</span>
+              {featuredProducts.map((product) => {
+                const imgSrc = product.code
+                  ? `/products/${product.code}.jpg`
+                  : (product.image || '');
+
+                return (
+                  <div className="hp-featured-card" key={product.id} onClick={() => goShop()}>
+                    <div className="hp-featured-card__badge">⭐ Featured</div>
+                    <div className="hp-featured-card__img-wrap">
+                      <img
+                        src={imgSrc}
+                        alt={product.name}
+                        className="hp-featured-card__img"
+                        loading="lazy"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.style.display = 'none';
+                          const fb = e.target.parentElement.querySelector('.hp-featured-card__fallback');
+                          if (fb) fb.style.display = 'flex';
+                        }}
+                      />
+                      <div className="hp-featured-card__fallback" style={{ display: 'none' }}>
+                        <span className="hp-featured-card__fallback-emoji">
+                          {CATEGORY_EMOJI[product.category] || '🧨'}
+                        </span>
+                        {product.code && (
+                          <span className="hp-featured-card__fallback-code">#{product.code}</span>
                         )}
                       </div>
-                      <button
-                        className="hp-btn hp-btn--primary hp-btn--sm"
-                        onClick={(e) => handleAddToCart(e, product)}
-                      >
-                        Add to Cart
-                      </button>
+                    </div>
+                    <div className="hp-featured-card__body">
+                      <span className="hp-featured-card__cat">{product.category}</span>
+                      <h3 className="hp-featured-card__name">{product.name}</h3>
+                      {product.description && (
+                        <p className="hp-featured-card__desc">{product.description}</p>
+                      )}
+                      <div className="hp-featured-card__footer">
+                        <div className="hp-featured-card__price">
+                          <span className="hp-featured-card__price-val">₹{product.price}</span>
+                          {product.unit && (
+                            <span className="hp-featured-card__price-unit"> / {product.unit}</span>
+                          )}
+                        </div>
+                        <button
+                          className="hp-btn hp-btn--primary hp-btn--sm"
+                          onClick={(e) => handleAddToCart(e, product)}
+                        >
+                          Add to Cart
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 

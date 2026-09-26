@@ -18,6 +18,9 @@ export default function App() {
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [siteSettings, setSiteSettings] = useState({
+    top_announcement_bar: '✨ Sivakasi Fresh Quality Crackers • Diwali 2026 Festive Sale • 🚀 Express Doorstep Dispatch & Real-Time Tracking'
+  });
 
   // Cart
   const [cart, setCart] = useState(() => {
@@ -39,20 +42,28 @@ export default function App() {
     try { localStorage.setItem('diwali_cart', JSON.stringify(cart)); } catch {}
   }, [cart]);
 
-  // Fetch Products
+  // Fetch Products & Site Settings
   const fetchProducts = async () => {
     try {
       setLoadingProducts(true);
-      const [prodRes, catRes] = await Promise.all([
+      const [prodRes, catRes, setRes] = await Promise.all([
         fetch('/api/products'),
         fetch('/api/products/categories'),
+        fetch('/api/settings').catch(() => null),
       ]);
       const prodData = await prodRes.json();
       const catData = await catRes.json();
       if (prodData.success) setProducts(prodData.products);
       if (catData.success) setCategoryMeta(catData.categories);
+
+      if (setRes) {
+        const setData = await setRes.json();
+        if (setData.success && setData.settings) {
+          setSiteSettings(setData.settings);
+        }
+      }
     } catch (e) {
-      console.error('Error fetching products:', e);
+      console.error('Error fetching data:', e);
     } finally {
       setLoadingProducts(false);
     }
@@ -126,6 +137,7 @@ export default function App() {
         setCurrentView={setCurrentView}
         cartCount={cartTotalCount}
         setIsCartOpen={setIsCartOpen}
+        announcementText={siteSettings.top_announcement_bar}
       />
 
       <main style={{ flex: 1 }}>
@@ -309,7 +321,7 @@ export default function App() {
               <h3 style={{ color: 'var(--primary-red)', fontWeight: 800 }}>DINOSAUR CRACKERS</h3>
             </div>
             <p>
-              Direct Sivakasi fireworks delivery celebrating safe and joyous festivities across India. Certified green crackers with quality assurance.
+              Direct Sivakasi fireworks delivery celebrating safe and joyous festivities across India. Premium crackers with quality assurance.
             </p>
           </div>
 
@@ -320,7 +332,7 @@ export default function App() {
                 style={{ cursor: 'pointer', color: 'var(--text-main)' }}
                 onClick={() => { setCurrentView('shop'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
               >
-                🎆 Shop All Crackers
+                🎆 Products Catalog
               </span>
               <span
                 style={{ cursor: 'pointer', color: 'var(--text-main)' }}
@@ -341,10 +353,10 @@ export default function App() {
           </div>
 
           <div className="footer-col">
-            <h4>Safe &amp; Certified</h4>
+            <h4>Safe &amp; Secure</h4>
             <p>
-              ✅ CSIR-NEERI Certified Green Crackers<br />
-              ✅ Fire-Proof Multi-Layer Packaging<br />
+              ✅ 100% Quality Assured Crackers<br />
+              ✅ Safe and Secure Packaging<br />
               ✅ Track anytime via Mobile Number
             </p>
           </div>

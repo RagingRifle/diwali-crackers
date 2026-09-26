@@ -1,35 +1,63 @@
 import React from 'react';
-import { ShoppingBag, Sparkles, Truck } from 'lucide-react';
+import { ShoppingBag, Home, Package, Truck } from 'lucide-react';
+import brandLogo from '../assets/logo.png';
 
 export default function Navbar({
   currentView,
   setCurrentView,
   cartCount,
   setIsCartOpen,
+  announcementText = '✨ Sivakasi Fresh Quality Crackers • Diwali 2026 Festive Sale • 🚀 Express Doorstep Dispatch & Real-Time Tracking',
 }) {
+  // Render announcement parts cleanly
+  const renderAnnouncement = () => {
+    if (!announcementText) return null;
+    if (announcementText.includes('•')) {
+      const parts = announcementText.split('•');
+      return parts.map((part, idx) => {
+        const trimmed = part.trim();
+        const isBadge = /(festive|sale|special|discount|offer)/i.test(trimmed);
+        return (
+          <React.Fragment key={idx}>
+            {isBadge ? <span className="badge">{trimmed}</span> : <span>{trimmed}</span>}
+            {idx < parts.length - 1 && <span>•</span>}
+          </React.Fragment>
+        );
+      });
+    }
+    return <span>{announcementText}</span>;
+  };
+
   return (
     <header className="header-wrapper">
-      {/* Red Festive Announcement Bar */}
+      {/* Red Festive Announcement Bar (Customizable from Admin) */}
       <div className="header-top-bar">
-        <span>✨ Sivakasi Fresh Quality Crackers</span>
-        <span>•</span>
-        <span className="badge">Diwali 2026 Festive Sale</span>
-        <span>•</span>
-        <span>🚀 Express Doorstep Dispatch &amp; Real-Time Tracking</span>
+        {renderAnnouncement()}
       </div>
 
       {/* Main White & Red Navbar */}
       <nav className="main-navbar">
         <div className="nav-container">
-          {/* Brand Logo */}
-          <div className="brand-logo" onClick={() => setCurrentView('home')}>
-            <div className="brand-icon">
-              🪔
-            </div>
-            <div className="brand-text">
-              <h1>DINOSAUR CRACKERS</h1>
-              <span>Premium Fireworks &amp; Crackers</span>
-            </div>
+          {/* Brand Logo featuring the attached logo image */}
+          <div
+            className="brand-logo"
+            onClick={() => setCurrentView('home')}
+            style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+            title="Dinosaur Crackers"
+          >
+            <img
+              src={brandLogo}
+              alt="Logo"
+              className="navbar-brand-logo"
+              style={{
+                height: '80px',
+                maxHeight: '90px',
+                width: 'auto',
+                maxWidth: '250px',
+                objectFit: 'contain',
+                display: 'block'
+              }}
+            />
           </div>
 
           {/* Navigation Links */}
@@ -38,15 +66,15 @@ export default function Navbar({
               className={`nav-link ${currentView === 'home' ? 'active' : ''}`}
               onClick={() => setCurrentView('home')}
             >
-              <Sparkles size={17} />
+              <Home size={17} />
               <span>Home</span>
             </button>
             <button
               className={`nav-link ${currentView === 'shop' ? 'active' : ''}`}
               onClick={() => setCurrentView('shop')}
             >
-              <Sparkles size={17} />
-              <span>Shop Crackers</span>
+              <Package size={17} />
+              <span>Products</span>
             </button>
 
             <button
