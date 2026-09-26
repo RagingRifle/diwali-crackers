@@ -22,8 +22,20 @@ export default function CartDrawer({
   const finalTotal = subtotal + deliveryFee;
 
   return (
-    <div className="cart-drawer-overlay" onClick={onClose}>
-      <div className="cart-drawer" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="cart-drawer-overlay"
+      onClick={onClose}
+      onTouchEnd={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div
+        className="cart-drawer"
+        onClick={(e) => e.stopPropagation()}
+        onTouchEnd={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="drawer-header">
           <h3>

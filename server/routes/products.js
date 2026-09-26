@@ -87,7 +87,7 @@ router.post('/', authenticateAdmin, async (req, res) => {
   try {
     const {
       code, name, category, content, price, mrp, discount_percent,
-      image, description, pack_size, in_stock, featured, is_combo, combo_items
+      image, description, pack_size, in_stock, featured, is_combo, combo_items, buying_cost
     } = req.body;
 
     if (!name || !category || price === undefined) {
@@ -99,17 +99,21 @@ router.post('/', authenticateAdmin, async (req, res) => {
     const numDiscount = discount_percent !== undefined
       ? Number(discount_percent)
       : (numMrp > numPrice ? Math.round(((numMrp - numPrice) / numMrp) * 100) : 0);
+    const numBuyingCost = Number(buying_cost) || 0;
 
     const isComboVal = is_combo ? 1 : (category === 'Combo Bundles' ? 1 : 0);
     const comboItemsStr = typeof combo_items === 'object' ? JSON.stringify(combo_items) : (combo_items || '');
 
     const db = await getDb();
+    // Migration safety: add column if it doesn't exist
+    try { db.run("ALTER TABLE products ADD COLUMN buying_cost REAL DEFAULT 0"); } catch(e) {}
+
     const result = db.run(`
       INSERT INTO products (
         code, name, category, content, price, mrp, discount_percent,
-        image, description, pack_size, in_stock, featured, is_combo, combo_items
+        image, description, pack_size, in_stock, featured, is_combo, combo_items, buying_cost
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
       code ? String(code).trim() : null,
       name.trim(),
@@ -124,7 +128,8 @@ router.post('/', authenticateAdmin, async (req, res) => {
       in_stock === undefined ? 1 : (in_stock ? 1 : 0),
       featured ? 1 : 0,
       isComboVal,
-      comboItemsStr
+      comboItemsStr,
+      numBuyingCost
     ]);
 
     const createdProduct = db.get("SELECT * FROM products WHERE id = ?", [result.lastInsertRowid]);
@@ -140,9 +145,12 @@ router.put('/:id', authenticateAdmin, async (req, res) => {
   try {
     const {
       code, name, category, content, price, mrp, discount_percent,
-      image, description, pack_size, in_stock, featured, is_combo, combo_items
+      image, description, pack_size, in_stock, featured, is_combo, combo_items, buying_cost
     } = req.body;
     const db = await getDb();
+
+    // Migration safety
+    try { db.run("ALTER TABLE products ADD COLUMN buying_cost REAL DEFAULT 0"); } catch(e) {}
 
     const existing = db.get("SELECT * FROM products WHERE id = ?", [req.params.id]);
     if (!existing) {
@@ -154,6 +162,7 @@ router.put('/:id', authenticateAdmin, async (req, res) => {
     const numDiscount = discount_percent !== undefined
       ? Number(discount_percent)
       : (numMrp > numPrice ? Math.round(((numMrp - numPrice) / numMrp) * 100) : 0);
+    const numBuyingCost = buying_cost !== undefined ? Number(buying_cost) : (existing.buying_cost || 0);
 
     const isComboVal = is_combo !== undefined
       ? (is_combo ? 1 : 0)
@@ -178,7 +187,8 @@ router.put('/:id', authenticateAdmin, async (req, res) => {
         in_stock = ?,
         featured = ?,
         is_combo = ?,
-        combo_items = ?
+        combo_items = ?,
+        buying_cost = ?
       WHERE id = ?
     `, [
       code !== undefined ? String(code) : existing.code,
@@ -195,6 +205,7 @@ router.put('/:id', authenticateAdmin, async (req, res) => {
       featured !== undefined ? (featured ? 1 : 0) : existing.featured,
       isComboVal,
       comboItemsStr,
+      numBuyingCost,
       req.params.id
     ]);
 

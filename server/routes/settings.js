@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
 
     // Ensure fallback for top_announcement_bar if empty
     if (!settings.top_announcement_bar) {
-      settings.top_announcement_bar = '✨ Sivakasi Fresh Quality Crackers • Diwali 2026 Festive Sale • 🚀 Express Doorstep Dispatch & Real-Time Tracking';
+      settings.top_announcement_bar = 'Sivakasi Fresh Quality Crackers • Diwali 2026 Festive Sale • 🚀 Express Doorstep Dispatch & Real-Time Tracking';
     }
 
     res.json({ success: true, settings });

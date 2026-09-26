@@ -78,6 +78,8 @@ export default function App() {
       if (existing) return prev.map((i) => i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i);
       return [...prev, { ...product, quantity: 1 }];
     });
+    // Open cart drawer after adding item
+    setIsCartOpen(true);
   };
 
   const handleUpdateQuantity = (productId, newQty) => {
@@ -164,11 +166,30 @@ export default function App() {
               }}
             />
 
+            {/* ── MOBILE CATEGORY CHIPS BAR (Sticky under navbar on mobile) ── */}
+            <div className="mobile-cat-chips-bar">
+              <button
+                className={`mobile-cat-chip ${selectedCategory === 'All' ? 'active' : ''}`}
+                onClick={() => { setSelectedCategory('All'); setSearchQuery(''); }}
+              >
+                All ({totalItems})
+              </button>
+              {categoryMeta.map(({ category, count }) => (
+                <button
+                  key={category}
+                  className={`mobile-cat-chip ${selectedCategory === category ? 'active' : ''}`}
+                  onClick={() => { setSelectedCategory(category); setSearchQuery(''); }}
+                >
+                  {category} ({count})
+                </button>
+              ))}
+            </div>
+
             {/* ── 3-COLUMN LAYOUT ── */}
             <div className="catalog-3col" id="catalog-3col">
 
-              {/* LEFT: Category Sidebar */}
-              <aside className="cat-sidebar">
+              {/* LEFT: Category Sidebar (Desktop only) */}
+              <aside className="cat-sidebar desktop-only">
                 <div className="cat-sidebar__header">CATEGORIES</div>
                 <ul className="cat-sidebar__list">
                   <li
@@ -193,7 +214,7 @@ export default function App() {
                 </ul>
               </aside>
 
-              {/* CENTER: Product List */}
+              {/* CENTER: Product List (First section on mobile) */}
               <div className="catalog-center">
                 {/* Header */}
                 <div className="catalog-center__header">
@@ -252,13 +273,15 @@ export default function App() {
                 )}
               </div>
 
-              {/* RIGHT: Selected Items Sidebar */}
-              <SelectedItemsSidebar
-                cart={cart}
-                onUpdateQuantity={handleUpdateQuantity}
-                onRemoveItem={handleRemoveCartItem}
-                onOrderNow={() => setIsCheckoutOpen(true)}
-              />
+              {/* RIGHT: Selected Items Sidebar (Desktop only) */}
+              <div className="desktop-only" style={{ position: 'sticky', top: '80px' }}>
+                <SelectedItemsSidebar
+                  cart={cart}
+                  onUpdateQuantity={handleUpdateQuantity}
+                  onRemoveItem={handleRemoveCartItem}
+                  onOrderNow={() => setIsCheckoutOpen(true)}
+                />
+              </div>
             </div>
           </>
         )}
@@ -344,12 +367,42 @@ export default function App() {
           </div>
 
           <div className="footer-col">
-            <h4>Customer Support &amp; Helpline</h4>
-            <p>
-              <strong>Helpline:</strong> +91 98765 43210<br />
-              <strong>Email:</strong> support@diwalispark.com<br />
-              <strong>Dispatch Hub:</strong> Sivakasi, Tamil Nadu, India
+            <h4>Customer Support &amp; Helplines</h4>
+            <p style={{ margin: '0 0 0.5rem', fontSize: '0.85rem' }}>
+              Direct Sivakasi Helpline Numbers:
             </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', fontSize: '0.88rem' }}>
+              <a href="tel:9384005248" style={{ color: 'var(--primary-red)', fontWeight: 700, textDecoration: 'none' }}>
+                📞 93840 05248
+              </a>
+              <a href="tel:7558175156" style={{ color: 'var(--primary-red)', fontWeight: 700, textDecoration: 'none' }}>
+                📞 75581 75156
+              </a>
+              <a href="tel:9150431251" style={{ color: 'var(--primary-red)', fontWeight: 700, textDecoration: 'none' }}>
+                📞 91504 31251
+              </a>
+              <a href="tel:9626622101" style={{ color: 'var(--primary-red)', fontWeight: 700, textDecoration: 'none' }}>
+                📞 96266 22101
+              </a>
+            </div>
+            <div style={{ marginTop: '0.75rem' }}>
+              <a
+                href="https://maps.google.com/?q=9.421799,77.807465"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  color: '#15803d',
+                  fontWeight: 700,
+                  fontSize: '0.84rem',
+                  textDecoration: 'underline'
+                }}
+              >
+                📍 Dispatch Hub: Sivakasi (9.421799, 77.807465)
+              </a>
+            </div>
           </div>
 
           <div className="footer-col">

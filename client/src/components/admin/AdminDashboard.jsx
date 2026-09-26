@@ -59,6 +59,10 @@ export default function AdminDashboard({ adminUser, onLogout, onProductChange })
   const [bulkDiscountVal, setBulkDiscountVal] = useState(80);
   const [bulkApplying, setBulkApplying] = useState(false);
 
+  // Top Announcement Bar editor
+  const [announcementText, setAnnouncementText] = useState('Sivakasi Fresh Quality Crackers • Diwali 2026 Festive Sale • 🚀 Express Doorstep Dispatch & Real-Time Tracking');
+  const [savingAnnouncement, setSavingAnnouncement] = useState(false);
+
   // Tracking modal inputs
   const [trackingForm, setTrackingForm] = useState({
     status: 'Packed',
@@ -74,6 +78,7 @@ export default function AdminDashboard({ adminUser, onLogout, onProductChange })
     category: 'Sparklers',
     price: '',
     mrp: '',
+    buying_cost: '',
     discount_percent: 80,
     pack_size: '1 Box',
     image: '',
@@ -95,8 +100,18 @@ export default function AdminDashboard({ adminUser, onLogout, onProductChange })
     items: [] // array of { id, code, name, content, mrp, price, quantity }
   });
 
-  // Selected item to add in combo builder
+  // Selected item to add in combo builder (legacy)
   const [selectedAddId, setSelectedAddId] = useState('');
+
+  // ── New Simple Combo Form ────────────────────────────────────────────────
+  const [simpleComboModal, setSimpleComboModal] = useState({ open: false, isEdit: false, data: null });
+  const [simpleComboForm, setSimpleComboForm] = useState({
+    name: '',
+    description: '',
+    image: '',
+    price: '',
+    featured: 1,
+  });
 
   const getAuthHeader = () => {
     const token = localStorage.getItem('diwali_admin_token');
@@ -166,10 +181,46 @@ export default function AdminDashboard({ adminUser, onLogout, onProductChange })
     }
   };
 
+  // Fetch Settings (e.g. Announcement Bar)
+  const fetchSettings = async () => {
+    try {
+      const res = await fetch('/api/settings');
+      const data = await res.json();
+      if (data.success && data.settings?.top_announcement_bar) {
+        setAnnouncementText(data.settings.top_announcement_bar);
+      }
+    } catch (e) {
+      console.error('Settings error', e);
+    }
+  };
+
+  const handleSaveAnnouncement = async () => {
+    try {
+      setSavingAnnouncement(true);
+      const res = await fetch('/api/settings', {
+        method: 'PUT',
+        headers: getAuthHeader(),
+        body: JSON.stringify({ top_announcement_bar: announcementText })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert('Top announcement bar text updated successfully!');
+        if (onProductChange) onProductChange();
+      } else {
+        alert(data.error || 'Failed to update announcement');
+      }
+    } catch (e) {
+      alert('Error updating announcement');
+    } finally {
+      setSavingAnnouncement(false);
+    }
+  };
+
   useEffect(() => {
     fetchStats();
     fetchOrders();
     fetchProducts();
+    fetchSettings();
   }, [orderStatusFilter, orderSearch, productSearch, productCategoryFilter]);
 
   // Update Status Quick
@@ -306,6 +357,7 @@ export default function AdminDashboard({ adminUser, onLogout, onProductChange })
       category: prod.category,
       price: prod.price,
       mrp: prod.mrp,
+      buying_cost: prod.buying_cost || '',
       discount_percent: prod.discount_percent || 0,
       pack_size: prod.pack_size || prod.content || '1 Box',
       image: prod.image,
@@ -619,12 +671,57 @@ export default function AdminDashboard({ adminUser, onLogout, onProductChange })
             style={{ background: activeTab === 'combos' ? 'var(--primary-red)' : '#fef3c7', color: activeTab === 'combos' ? '#fff' : '#92400e' }}
           >
             <Layers size={16} />
-            <span>Cook Up Combos 🎁 ({comboProducts.length})</span>
+            <span>Manage Combos 🎁 ({comboProducts.length})</span>
           </button>
 
           <button className="btn-admin-logout" onClick={onLogout}>
             <LogOut size={16} />
             <span>Sign Out</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Top Announcement Bar Manager */}
+      <div style={{
+        background: '#fff',
+        border: '1px solid #fee2e2',
+        borderRadius: '10px',
+        padding: '0.75rem 1.25rem',
+        margin: '1rem 0',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '0.75rem',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: '220px' }}>
+          <span style={{ fontSize: '1.2rem' }}>📢</span>
+          <div>
+            <strong style={{ fontSize: '0.88rem', color: '#991b1b' }}>Top Announcement Bar Text:</strong>
+            <p style={{ margin: 0, fontSize: '0.75rem', color: '#6b7280' }}>
+              Displayed on top of the entire website. If text is long, it will continuously scroll past.
+            </p>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: '1 1 350px' }}>
+          <input
+            type="text"
+            className="form-control"
+            value={announcementText}
+            onChange={(e) => setAnnouncementText(e.target.value)}
+            placeholder="e.g. Sivakasi Fresh Quality Crackers • Diwali 2026 Festive Sale • 🚀 Express Doorstep Dispatch"
+            style={{ fontSize: '0.85rem', flex: 1 }}
+          />
+          <button
+            type="button"
+            className="btn-action"
+            style={{ background: 'var(--primary-red)', color: '#fff', borderColor: 'var(--primary-red)', fontWeight: 700, whiteSpace: 'nowrap' }}
+            onClick={handleSaveAnnouncement}
+            disabled={savingAnnouncement}
+          >
+            {savingAnnouncement ? 'Saving...' : 'Save Announcement'}
           </button>
         </div>
       </div>
@@ -922,6 +1019,8 @@ export default function AdminDashboard({ adminUser, onLogout, onProductChange })
                   <th>MRP (₹)</th>
                   <th>Discount</th>
                   <th>Selling Price (₹)</th>
+                  <th>Buying Cost (₹)</th>
+                  <th>Profit (₹)</th>
                   <th>Pack Size</th>
                   <th>Stock</th>
                   <th>Actions</th>
@@ -987,6 +1086,44 @@ export default function AdminDashboard({ adminUser, onLogout, onProductChange })
                         </div>
                       </td>
 
+                      {/* Buying Cost – inline editable */}
+                      <td>
+                        <input
+                          type="number"
+                          min="0"
+                          placeholder="0"
+                          defaultValue={prod.buying_cost || ''}
+                          onBlur={async (e) => {
+                            const val = Number(e.target.value) || 0;
+                            await fetch(`/api/products/${prod.id}`, {
+                              method: 'PUT',
+                              headers: getAuthHeader(),
+                              body: JSON.stringify({ buying_cost: val })
+                            });
+                            fetchProducts();
+                          }}
+                          style={{
+                            width: '80px', padding: '0.3rem 0.4rem',
+                            border: '1px solid #d1d5db', borderRadius: '6px',
+                            fontSize: '0.85rem', textAlign: 'center'
+                          }}
+                        />
+                      </td>
+
+                      {/* Profit */}
+                      <td>
+                        {prod.buying_cost > 0 ? (
+                          <span style={{
+                            fontWeight: 700,
+                            color: prod.price - prod.buying_cost > 0 ? '#16a34a' : '#dc2626'
+                          }}>
+                            ₹{prod.price - prod.buying_cost}
+                          </span>
+                        ) : (
+                          <span style={{ color: '#9ca3af', fontSize: '0.78rem' }}>—</span>
+                        )}
+                      </td>
+
                       <td style={{ fontSize: '0.85rem' }}>
                         {prod.pack_size || prod.content || '1 Box'}
                       </td>
@@ -1030,25 +1167,28 @@ export default function AdminDashboard({ adminUser, onLogout, onProductChange })
       )}
 
       {/* ═══════════════════════════════════════════════════════════════
-          TAB 3: COOK UP COMBO BUNDLES 🎁
+          TAB 3: MANAGE COMBOS
       ═══════════════════════════════════════════════════════════════ */}
       {activeTab === 'combos' && (
         <div className="admin-table-card">
           <div className="table-toolbar">
             <div>
-              <h3>🎁 Cook Up Combo Bundles</h3>
+              <h3>🎁 Manage Combo Bundles</h3>
               <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                Assemble custom festive hampers from your 137 crackers with dedicated bundle pricing and combo discounts.
+                Create and manage combo packages. Customers see only the name and description.
               </p>
             </div>
 
             <button
               className="cart-btn"
               style={{ padding: '0.5rem 1.25rem', fontSize: '0.88rem', background: '#b91c1c' }}
-              onClick={openNewCombo}
+              onClick={() => {
+                setSimpleComboForm({ name: '', description: '', image: '', price: '', featured: 1 });
+                setSimpleComboModal({ open: true, isEdit: false, data: null });
+              }}
             >
               <Plus size={16} />
-              <span>+ Cook Up New Combo</span>
+              <span>+ Add New Combo</span>
             </button>
           </div>
 
@@ -1057,11 +1197,9 @@ export default function AdminDashboard({ adminUser, onLogout, onProductChange })
               <thead>
                 <tr>
                   <th style={{ width: '70px' }}>Code</th>
-                  <th>Combo Bundle Name</th>
-                  <th>Included Cracker Products</th>
-                  <th>Total MRP</th>
-                  <th>Combo Discount</th>
-                  <th>Bundle Sale Price</th>
+                  <th>Combo Name</th>
+                  <th>Description</th>
+                  <th>Price (₹)</th>
                   <th>Stock</th>
                   <th>Actions</th>
                 </tr>
@@ -1069,98 +1207,213 @@ export default function AdminDashboard({ adminUser, onLogout, onProductChange })
               <tbody>
                 {comboProducts.length === 0 ? (
                   <tr>
-                    <td colSpan="8" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-                      No combo bundles created yet. Click "+ Cook Up New Combo" above to create your first package!
+                    <td colSpan="6" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+                      No combo bundles created yet. Click "+ Add New Combo" above to create your first package!
                     </td>
                   </tr>
                 ) : (
-                  comboProducts.map((combo) => {
-                    let items = [];
-                    try { items = JSON.parse(combo.combo_items || '[]'); } catch (e) {}
+                  comboProducts.map((combo) => (
+                    <tr key={combo.id}>
+                      <td style={{ fontFamily: 'monospace', fontWeight: 800, color: 'var(--primary-red)' }}>
+                        {combo.code || '-'}
+                      </td>
 
-                    return (
-                      <tr key={combo.id}>
-                        <td style={{ fontFamily: 'monospace', fontWeight: 800, color: 'var(--primary-red)' }}>
-                          {combo.code || '-'}
-                        </td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                          {combo.image && (
+                            <img
+                              src={combo.image}
+                              alt={combo.name}
+                              style={{ width: '40px', height: '40px', borderRadius: '6px', objectFit: 'cover' }}
+                              onError={(e) => { e.target.style.display = 'none'; }}
+                            />
+                          )}
+                          <div style={{ fontWeight: 800 }}>{combo.name}</div>
+                        </div>
+                      </td>
 
-                        <td>
-                          <div style={{ fontWeight: 800, fontSize: '0.95rem' }}>{combo.name}</div>
-                          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                            {combo.content || `${items.length} Items Hamper`}
-                          </div>
-                        </td>
+                      <td style={{ fontSize: '0.82rem', maxWidth: '250px', color: '#6b7280' }}>
+                        {combo.description ? combo.description.substring(0, 80) + (combo.description.length > 80 ? '…' : '') : '—'}
+                      </td>
 
-                        <td>
-                          <div style={{ fontSize: '0.82rem', maxWidth: '280px', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                            {items.map((it, idx) => (
-                              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', color: '#374151' }}>
-                                <span>• {it.quantity}x {it.name}</span>
-                                <span style={{ color: '#9ca3af', fontSize: '0.75rem' }}>₹{it.price * it.quantity}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </td>
+                      <td>
+                        <div style={{ fontWeight: 800, color: 'var(--primary-red)', fontSize: '1rem' }}>
+                          ₹{combo.price}
+                        </div>
+                      </td>
 
-                        <td style={{ textDecoration: 'line-through', color: 'var(--text-muted)' }}>
-                          ₹{combo.mrp}
-                        </td>
+                      <td>
+                        <button
+                          onClick={() => handleToggleStock(combo.id)}
+                          className={`status-pill ${combo.in_stock ? 'delivered' : 'cancelled'}`}
+                          style={{ cursor: 'pointer', border: 'none' }}
+                        >
+                          {combo.in_stock ? '● In Stock' : '● Sold Out'}
+                        </button>
+                      </td>
 
-                        <td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '0.35rem' }}>
                           <button
                             className="btn-action"
-                            style={{ background: '#e8f5e9', color: '#2e7d32', borderColor: '#a5d6a7', fontWeight: 800 }}
-                            title="Edit combo discount manually"
-                            onClick={() => openDiscountModal(combo)}
+                            onClick={() => {
+                              setSimpleComboForm({
+                                name: combo.name,
+                                description: combo.description || '',
+                                image: combo.image || '',
+                                price: combo.price,
+                                featured: combo.featured || 0,
+                              });
+                              setSimpleComboModal({ open: true, isEdit: true, data: combo });
+                            }}
+                            title="Edit Combo"
                           >
-                            <Percent size={12} />
-                            <span>{combo.discount_percent || 85}% OFF</span>
+                            <Edit2 size={14} />
+                            <span>Edit</span>
                           </button>
-                        </td>
-
-                        <td>
-                          <div style={{ fontWeight: 800, color: 'var(--primary-red)', fontSize: '1.1rem' }}>
-                            ₹{combo.price}
-                          </div>
-                        </td>
-
-                        <td>
                           <button
-                            onClick={() => handleToggleStock(combo.id)}
-                            className={`status-pill ${combo.in_stock ? 'delivered' : 'cancelled'}`}
-                            style={{ cursor: 'pointer', border: 'none' }}
+                            className="btn-action danger"
+                            onClick={() => handleDeleteProduct(combo.id, combo.name)}
+                            title="Delete Combo"
                           >
-                            {combo.in_stock ? '● In Stock' : '● Sold Out'}
+                            <Trash2 size={14} />
                           </button>
-                        </td>
-
-                        <td>
-                          <div style={{ display: 'flex', gap: '0.35rem' }}>
-                            <button
-                              className="btn-action"
-                              onClick={() => openEditCombo(combo)}
-                              title="Edit Combo Pack"
-                            >
-                              <Edit2 size={14} />
-                              <span>Edit</span>
-                            </button>
-                            <button
-                              className="btn-action danger"
-                              onClick={() => handleDeleteProduct(combo.id, combo.name)}
-                              title="Delete Combo Pack"
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
+                        </div>
+                      </td>
+                    </tr>
+                  ))
                 )}
               </tbody>
             </table>
           </div>
         </div>
+      )}
+
+      {/* ── SIMPLE COMBO MODAL ──────────────────────────────────────────── */}
+      {simpleComboModal.open && (
+        <div className="modal-overlay" onClick={() => setSimpleComboModal({ open: false, isEdit: false, data: null })}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '540px' }}>
+            <div className="modal-header">
+              <h3>
+                <Layers size={20} />
+                <span>{simpleComboModal.isEdit ? 'Edit Combo Bundle' : 'Add New Combo Bundle'}</span>
+              </h3>
+              <button className="modal-close-btn" onClick={() => setSimpleComboModal({ open: false, isEdit: false, data: null })}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="modal-body">
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                try {
+                  const isEdit = simpleComboModal.isEdit;
+                  const url = isEdit ? `/api/products/${simpleComboModal.data.id}` : '/api/products';
+                  const method = isEdit ? 'PUT' : 'POST';
+                  const payload = {
+                    name: simpleComboForm.name,
+                    description: simpleComboForm.description,
+                    image: simpleComboForm.image,
+                    price: Number(simpleComboForm.price) || 0,
+                    mrp: Number(simpleComboForm.price) || 0,
+                    discount_percent: 0,
+                    category: 'Combo Bundles',
+                    is_combo: 1,
+                    featured: simpleComboForm.featured ? 1 : 0,
+                    pack_size: 'Combo Pack',
+                    combo_items: '[]',
+                  };
+                  const res = await fetch(url, { method, headers: getAuthHeader(), body: JSON.stringify(payload) });
+                  const data = await res.json();
+                  if (data.success) {
+                    setSimpleComboModal({ open: false, isEdit: false, data: null });
+                    fetchProducts();
+                    if (onProductChange) onProductChange();
+                  } else {
+                    alert(data.error || 'Failed to save combo');
+                  }
+                } catch (err) {
+                  alert('Error saving combo');
+                }
+              }}>
+                <div className="form-group">
+                  <label>Combo Name <span className="required">*</span></label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    required
+                    placeholder="e.g. Family Dhamaka Hamper"
+                    value={simpleComboForm.name}
+                    onChange={(e) => setSimpleComboForm(prev => ({ ...prev, name: e.target.value }))}
+                  />
+                </div>
+
+                <div className="form-group" style={{ marginTop: '0.75rem' }}>
+                  <label>Description <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>— visible to customers; describe what's included here</span></label>
+                  <textarea
+                    className="form-control"
+                    rows={4}
+                    required
+                    placeholder="e.g. Includes 2x Sparklers, 1x Flower Pot, 1x Ground Chakkar, 1x 12-Shot Aerial Cake..."
+                    value={simpleComboForm.description}
+                    onChange={(e) => setSimpleComboForm(prev => ({ ...prev, description: e.target.value }))}
+                  />
+                </div>
+
+                <div className="form-group" style={{ marginTop: '0.75rem' }}>
+                  <label>Image URL</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="e.g. /combos/family-hamper.jpg"
+                    value={simpleComboForm.image}
+                    onChange={(e) => setSimpleComboForm(prev => ({ ...prev, image: e.target.value }))}
+                  />
+                </div>
+
+                <div className="form-group" style={{ marginTop: '0.75rem' }}>
+                  <label>Fixed Price (₹) <span className="required">*</span></label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    required
+                    min="1"
+                    placeholder="e.g. 599"
+                    value={simpleComboForm.price}
+                    onChange={(e) => setSimpleComboForm(prev => ({ ...prev, price: e.target.value }))}
+                  />
+                  <p style={{ fontSize: '0.78rem', color: '#6b7280', marginTop: '0.25rem' }}>
+                    This is a fixed price — no MRP/discount will be shown to customers.
+                  </p>
+                </div>
+
+                <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <input
+                    type="checkbox"
+                    id="sc-featured"
+                    checked={simpleComboForm.featured === 1}
+                    onChange={(e) => setSimpleComboForm(prev => ({ ...prev, featured: e.target.checked ? 1 : 0 }))}
+                  />
+                  <label htmlFor="sc-featured" style={{ fontSize: '0.88rem', fontWeight: 600 }}>
+                    Feature this combo on the home page
+                  </label>
+                </div>
+
+                <button type="submit" className="btn-submit-order" style={{ marginTop: '1.25rem' }}>
+                  <Save size={18} />
+                  <span>{simpleComboModal.isEdit ? 'Update Combo' : 'Save & Publish Combo'}</span>
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          LEGACY COMBO BUILDER (hidden – kept for future reference)
+      ═══════════════════════════════════════════════════════════════ */}
+      {/* eslint-disable-next-line no-constant-condition */}
+      {false && comboModal.open && (
+        <div style={{ display: 'none' }} />
       )}
 
       {/* ═══════════════════════════════════════════════════════════════
@@ -1740,6 +1993,23 @@ export default function AdminDashboard({ adminUser, onLogout, onProductChange })
                       setProductForm(prev => ({ ...prev, price: e.target.value, discount_percent: d }));
                     }}
                   />
+                </div>
+
+                <div className="form-group" style={{ marginTop: '0.75rem' }}>
+                  <label>Buying Cost (₹) <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>— your cost price for profit tracking</span></label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    min="0"
+                    placeholder="e.g. 12"
+                    value={productForm.buying_cost}
+                    onChange={(e) => setProductForm(prev => ({ ...prev, buying_cost: e.target.value }))}
+                  />
+                  {productForm.buying_cost > 0 && productForm.price > 0 && (
+                    <p style={{ fontSize: '0.82rem', marginTop: '0.3rem', color: productForm.price - productForm.buying_cost > 0 ? '#16a34a' : '#dc2626', fontWeight: 700 }}>
+                      Profit per unit: ₹{productForm.price - productForm.buying_cost}
+                    </p>
+                  )}
                 </div>
 
                 <div className="form-group" style={{ marginTop: '0.75rem' }}>

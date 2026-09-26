@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
   Sparkles, Shield, Truck, Flame, ArrowRight,
-  Star, Package, Zap, Phone, CheckCircle, Gift,
+  Star, Package, Zap, Phone, CheckCircle, MapPin
 } from 'lucide-react';
 import heroBg from '../assets/diwali_hero.jpg';
+import ProductGrid from './ProductGrid';
+import FeaturedCombos from './FeaturedCombos';
+import TestimonialsCarousel from './TestimonialsCarousel';
 
 /* ─── Countdown to Diwali 2026 (Nov 8, 2026) ────────────────────────────── */
 function useCountdown(targetDate) {
@@ -30,7 +33,7 @@ function useCountdown(targetDate) {
 const TRUST = [
   { icon: <Shield size={28} />, title: 'Premium Sivakasi Quality', desc: 'Top quality Sivakasi fireworks tested for high performance & safety' },
   { icon: <Truck size={28} />,  title: 'Express Delivery',     desc: 'Safe and secure packaging shipped directly from Sivakasi' },
-  { icon: <Star size={28} />,   title: '2,000+ Happy Families', desc: 'Trusted by customers across India for 5+ festive seasons' },
+  { icon: <Star size={28} />,   title: '2000+ Happy Families', desc: 'Trusted by customers across India for 5+ festive seasons' },
   { icon: <Zap size={28} />,    title: 'Live Order Tracking',   desc: 'Track your order anytime with your mobile number' },
 ];
 
@@ -39,44 +42,28 @@ const TESTIMONIALS = [
   { name: 'Priya R.', city: 'Chennai', stars: 5, text: 'Amazing quality sparklers! My kids loved every bit of it. Packaging was super safe and delivery was on time. Will order again!' },
   { name: 'Rahul M.', city: 'Bangalore', stars: 5, text: 'Best Sivakasi crackers online. The gift box was worth every rupee. Order tracking feature is fantastic!' },
   { name: 'Deepa S.', city: 'Hyderabad', stars: 5, text: 'Bought the family combo — absolutely delightful! High quality and safe. Highly recommend Dinosaur Crackers.' },
+  { name: 'Anita K.', city: 'Pune', stars: 5, text: 'The combo offers saved us money and the fireworks were spectacular. Loved the whole experience.' },
+  { name: 'Vikram P.', city: 'Ahmedabad', stars: 5, text: 'Fast delivery and great customer support. The crackers were exactly as described.' },
+  { name: 'Suresh L.', city: 'Coimbatore', stars: 5, text: 'Ordered for the first time this Diwali and honestly I was nervous about online crackers — but these guys nailed it. Same day dispatch and everything was intact. 100% will order again.' },
+  { name: 'Meena T.', city: 'Madurai', stars: 5, text: 'The sky shots we got were incredible! Neighbours kept asking where we bought them. Price was really good compared to local market. Very happy customer.' },
+  { name: 'Karthik B.', city: 'Chennai', stars: 5, text: 'I order from here every year now. The packing is tight and nothing breaks during transport. Ground chakkars and flower pots were the highlight this year!' },
+  { name: 'Nandini V.', city: 'Mysore', stars: 5, text: 'My husband is very picky about cracker quality. He was impressed this time! Got the big combo pack and the whole family enjoyed. Delivery was 2 days ahead of expected.' },
+  { name: 'Arun D.', city: 'Salem', stars: 5, text: 'Compared to buying locally, this is cheaper and much better quality. The 30-shot aerial cake was absolutely mind-blowing. Definitely recommending to friends.' },
+  { name: 'Kavitha R.', city: 'Trichy', stars: 5, text: 'Very smooth ordering process. Just added to cart, placed the order with phone number and they called to confirm. Real people, real service. Loved it!' },
+  { name: 'Bala S.', city: 'Erode', stars: 4, text: 'Good quality products. Delivery was slightly delayed by one day but the crackers themselves were excellent. Will order again next Diwali for sure.' },
 ];
 
-/* ─── Category emoji map ─────────────────────────────────────────────────── */
-const CATEGORY_EMOJI = {
-  'Sparklers': '✨',
-  'Sky Shots': '🚀',
-  'Flower Pots': '🌺',
-  'Ground Chakras': '🎆',
-  'Gift boxes': '🎁',
-  'Family Combos': '🔥',
-};
+/* ─── Contact Phone Numbers & Map ────────────────────────────────────────── */
+const PHONE_NUMBERS = [
+  '93840 05248',
+  '75581 75156',
+  '91504 31251',
+  '96266 22101'
+];
+const MAP_URL = 'https://maps.google.com/?q=9.421799,77.807465';
 
 export default function HomePage({ setCurrentView, onSelectCategory, onAddToCart }) {
   const { days, hours, minutes, seconds } = useCountdown('2026-11-08T00:00:00');
-  const [featuredProducts, setFeaturedProducts] = useState([]);
-  const [loadingFeatured, setLoadingFeatured] = useState(true);
-
-  /* Fetch featured products on mount (crackers only, exclude combos) */
-  useEffect(() => {
-    fetch('/api/products?featured=true&inStockOnly=true&isCombo=false')
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.success && data.products && data.products.length > 0) {
-          setFeaturedProducts(data.products.slice(0, 8));
-        } else {
-          // Fallback to top in-stock crackers if none explicitly marked featured
-          fetch('/api/products?inStockOnly=true&isCombo=false')
-            .then((r) => r.json())
-            .then((fallback) => {
-              if (fallback.success && fallback.products) {
-                setFeaturedProducts(fallback.products.slice(0, 8));
-              }
-            });
-        }
-      })
-      .catch(() => {})
-      .finally(() => setLoadingFeatured(false));
-  }, []);
 
   const goShop = (cat) => {
     if (cat && onSelectCategory) onSelectCategory(cat);
@@ -85,69 +72,91 @@ export default function HomePage({ setCurrentView, onSelectCategory, onAddToCart
   };
 
   const handleAddToCart = (e, product) => {
-    e.stopPropagation();
+    if (e && e.stopPropagation) e.stopPropagation();
     if (onAddToCart) onAddToCart(product);
   };
 
   return (
     <div className="homepage">
 
-      {/* ══════════════════ HERO SECTION ══════════════════ */}
-      <section className="hp-hero">
-        <img src={heroBg} alt="Diwali 2026 Celebration" className="hp-hero__bg" />
-        <div className="hp-hero__overlay" />
-
-        <div className="hp-hero__content">
-          {/* Badge */}
-          <div className="hp-hero__badge">
-            <Sparkles size={15} />
-            <span>Diwali 2026 — Festival of Lights</span>
+      {/* ══════════════════ HERO SECTION (WITH UPLOADED BANNER) ══════════════════ */}
+      <section className="hp-hero" style={{ minHeight: 'auto', padding: '1rem 1rem 0' }}>
+        <div style={{ maxWidth: '1240px', margin: '0 auto', width: '100%' }}>
+          {/* Banner Graphic Image */}
+          <div style={{
+            position: 'relative',
+            borderRadius: '16px',
+            overflow: 'hidden',
+            boxShadow: '0 8px 30px rgba(0,0,0,0.18)',
+            border: '2px solid rgba(254, 240, 138, 0.4)',
+            background: '#111',
+          }}>
+            <img
+              src={heroBg}
+              alt="Dinosaur Crackers - This Diwali Light Up Your World - Up to 85% OFF"
+              style={{
+                width: '100%',
+                height: 'auto',
+                display: 'block',
+                maxHeight: '520px',
+                objectFit: 'cover',
+                objectPosition: 'center',
+              }}
+            />
           </div>
 
-          {/* Title */}
-          <h1 className="hp-hero__title">
-            Light Up Your <br />
-            <span className="hp-hero__title-highlight">Diwali 2026</span><br />
-            with Dinosaur Crackers
-          </h1>
+          {/* Quick Hero Action Bar & Countdown Bar */}
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '1rem',
+            padding: '1.25rem 0.5rem',
+          }}>
+            {/* Action Buttons */}
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <button
+                className="hp-btn hp-btn--primary"
+                onClick={() => goShop()}
+                style={{ padding: '0.75rem 1.5rem', fontSize: '1rem' }}
+              >
+                <Flame size={20} />
+                <span>Shop All Crackers</span>
+                <ArrowRight size={18} />
+              </button>
+              <button
+                className="hp-btn hp-btn--secondary"
+                onClick={() => goShop('Combo Bundles')}
+                style={{ padding: '0.75rem 1.25rem', fontSize: '0.95rem' }}
+              >
+                <Sparkles size={18} />
+                <span>View Combos (85% OFF)</span>
+              </button>
+            </div>
 
-          <p className="hp-hero__subtitle">
-            Premium quality fireworks delivered safely to your doorstep.
-            Sparklers, rockets, ground chakkars, flower pots &amp; sky shots — direct from Sivakasi.
-          </p>
-
-          {/* CTA Buttons */}
-          <div className="hp-hero__actions">
-            <button className="hp-btn hp-btn--primary" onClick={() => goShop()}>
-              <Flame size={18} />
-              Shop All Crackers
-              <ArrowRight size={16} />
-            </button>
-            <button className="hp-btn hp-btn--secondary" onClick={() => goShop('Sparklers')}>
-              <Sparkles size={18} />
-              Explore Sparklers
-            </button>
-          </div>
-
-          {/* Feature pills */}
-          <div className="hp-hero__pills">
-            <span className="hp-pill">✨ 100% Quality Assured</span>
-            <span className="hp-pill">🚚 Safe and Secure Packaging</span>
-            <span className="hp-pill">📦 Doorstep Delivery</span>
-            <span className="hp-pill">📱 Live Tracking</span>
-          </div>
-        </div>
-
-        {/* Countdown card floating on hero */}
-        <div className="hp-countdown">
-          <div className="hp-countdown__label">🪔 Diwali 2026 Countdown</div>
-          <div className="hp-countdown__timer">
-            {[['Days', days], ['Hrs', hours], ['Min', minutes], ['Sec', seconds]].map(([label, val]) => (
-              <div className="hp-countdown__unit" key={label}>
-                <span className="hp-countdown__num">{String(val).padStart(2, '0')}</span>
-                <span className="hp-countdown__lbl">{label}</span>
+            {/* Countdown Badge */}
+            <div style={{
+              background: 'linear-gradient(135deg, #7f1d1d, #991b1b)',
+              color: '#fff',
+              padding: '0.65rem 1.25rem',
+              borderRadius: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1rem',
+              boxShadow: '0 4px 12px rgba(185, 28, 28, 0.25)',
+            }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fef08a' }}>
+                🪔 Diwali 2026 Countdown:
+              </span>
+              <div style={{ display: 'flex', gap: '0.5rem', fontWeight: 800 }}>
+                {[['D', days], ['H', hours], ['M', minutes], ['S', seconds]].map(([lbl, val]) => (
+                  <span key={lbl} style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '4px', fontSize: '0.88rem' }}>
+                    {String(val).padStart(2, '0')}{lbl}
+                  </span>
+                ))}
               </div>
-            ))}
+            </div>
           </div>
         </div>
       </section>
@@ -155,7 +164,7 @@ export default function HomePage({ setCurrentView, onSelectCategory, onAddToCart
       {/* ══════════════════ STATS BAR ══════════════════ */}
       <section className="hp-stats">
         {[
-          { val: '2k+', label: 'Happy Customers' },
+          { val: '2000+', label: 'Happy Customers' },
           { val: '200+', label: 'Product Varieties' },
           { val: '5+', label: 'Years of Trust' },
         ].map(({ val, label }) => (
@@ -166,91 +175,24 @@ export default function HomePage({ setCurrentView, onSelectCategory, onAddToCart
         ))}
       </section>
 
-      {/* ══════════════════ FEATURED CRACKERS ══════════════════ */}
+      {/* ══════════════════ FEATURED COMBOS & SCROLLABLE PRODUCTS BOX ══════════════════ */}
       <section className="hp-section">
         <div className="hp-section__inner">
+          {/* Section 1: Featured Combos */}
           <div className="hp-section__header">
-            <h2 className="hp-section__title">⭐ Featured Crackers</h2>
-            <p className="hp-section__sub">Handpicked bestsellers — loved by thousands of families</p>
+            <h2 className="hp-section__title">⭐ Featured Combos</h2>
+            <p className="hp-section__sub">Best value festive hampers direct from Sivakasi (Fixed Price)</p>
           </div>
+          <FeaturedCombos onAddToCart={handleAddToCart} />
 
-          {loadingFeatured ? (
-            <div className="hp-featured-grid">
-              {[...Array(6)].map((_, i) => (
-                <div className="hp-featured-skeleton" key={i} />
-              ))}
-            </div>
-          ) : featuredProducts.length === 0 ? (
-            <div className="hp-featured-empty">
-              <p>No featured products yet. Check back soon! 🎆</p>
-              <button className="hp-btn hp-btn--primary" onClick={() => goShop()}>
-                Browse All Crackers <ArrowRight size={16} />
-              </button>
-            </div>
-          ) : (
-            <div className="hp-featured-grid">
-              {featuredProducts.map((product) => {
-                const imgSrc = product.code
-                  ? `/products/${product.code}.jpg`
-                  : (product.image || '');
-
-                return (
-                  <div className="hp-featured-card" key={product.id} onClick={() => goShop()}>
-                    <div className="hp-featured-card__badge">⭐ Featured</div>
-                    <div className="hp-featured-card__img-wrap">
-                      <img
-                        src={imgSrc}
-                        alt={product.name}
-                        className="hp-featured-card__img"
-                        loading="lazy"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.style.display = 'none';
-                          const fb = e.target.parentElement.querySelector('.hp-featured-card__fallback');
-                          if (fb) fb.style.display = 'flex';
-                        }}
-                      />
-                      <div className="hp-featured-card__fallback" style={{ display: 'none' }}>
-                        <span className="hp-featured-card__fallback-emoji">
-                          {CATEGORY_EMOJI[product.category] || '🧨'}
-                        </span>
-                        {product.code && (
-                          <span className="hp-featured-card__fallback-code">#{product.code}</span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="hp-featured-card__body">
-                      <span className="hp-featured-card__cat">{product.category}</span>
-                      <h3 className="hp-featured-card__name">{product.name}</h3>
-                      {product.description && (
-                        <p className="hp-featured-card__desc">{product.description}</p>
-                      )}
-                      <div className="hp-featured-card__footer">
-                        <div className="hp-featured-card__price">
-                          <span className="hp-featured-card__price-val">₹{product.price}</span>
-                          {product.unit && (
-                            <span className="hp-featured-card__price-unit"> / {product.unit}</span>
-                          )}
-                        </div>
-                        <button
-                          className="hp-btn hp-btn--primary hp-btn--sm"
-                          onClick={(e) => handleAddToCart(e, product)}
-                        >
-                          Add to Cart
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-            <button className="hp-btn hp-btn--secondary" onClick={() => goShop()}>
-              View All Crackers <ArrowRight size={16} />
-            </button>
+          {/* Section 2: All Products in compact scrollable box */}
+          <div className="hp-section__header" style={{ marginTop: '2.5rem' }}>
+            <h2 className="hp-section__title">🎆 All Cracker Products</h2>
+            <p className="hp-section__sub">
+              Browse and add to cart directly from this scrollable box without leaving the page
+            </p>
           </div>
+          <ProductGrid onAddToCart={handleAddToCart} onGoToCatalog={() => goShop()} />
         </div>
       </section>
 
@@ -260,16 +202,11 @@ export default function HomePage({ setCurrentView, onSelectCategory, onAddToCart
           <div className="hp-feature-banner__text">
             <div className="hp-feature-banner__badge">🎆 Special Festive Offer</div>
             <h2>Authentic Sivakasi Crackers</h2>
-            <p>
-              Light up your celebrations with genuine sparklers, flower pots, sky shots, ground chakkars
-              &amp; sound crackers. <strong>Up to 80% OFF</strong> factory direct pricing from Dinosaur Crackers!
-            </p>
-            <button className="hp-btn hp-btn--primary" onClick={() => goShop()}>
-              <Flame size={18} /> Shop Crackers Now <ArrowRight size={16} />
-            </button>
+            <p>Light up your celebrations with genuine sparklers, flower pots, sky shots &amp; sound crackers. <strong>Up to 85% OFF</strong> factory direct pricing from Dinosaur Crackers!</p>
+            <button className="hp-btn hp-btn--primary" onClick={() => goShop()}><Flame size={18} />Shop Crackers Now<ArrowRight size={16} /></button>
           </div>
           <div className="hp-feature-banner__visual">
-            <div className="hp-feature-banner__burst">80% OFF</div>
+            <div className="hp-feature-banner__burst">85% OFF</div>
             <div className="hp-feature-banner__emojis">
               <span>🎆</span><span>✨</span><span>🎇</span>
               <span>🪔</span><span>🧨</span><span>🚀</span>
@@ -285,9 +222,9 @@ export default function HomePage({ setCurrentView, onSelectCategory, onAddToCart
             <h2 className="hp-section__title">Why Choose Dinosaur Crackers?</h2>
             <p className="hp-section__sub">Your trust is our biggest celebration</p>
           </div>
-          <div className="hp-trust">
+          <div className="hp-trust" style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '1rem' }}>
             {TRUST.map((t) => (
-              <div className="hp-trust__card" key={t.title}>
+              <div className="hp-trust__card" key={t.title} style={{ flex: '0 1 260px' }}>
                 <div className="hp-trust__icon">{t.icon}</div>
                 <h3 className="hp-trust__title">{t.title}</h3>
                 <p className="hp-trust__desc">{t.desc}</p>
@@ -297,14 +234,14 @@ export default function HomePage({ setCurrentView, onSelectCategory, onAddToCart
         </div>
       </section>
 
-      {/* ══════════════════ HOW IT WORKS ══════════════════ */}
+      {/* ══════════════════ ORDER IN 3 STEPS ══════════════════ */}
       <section className="hp-section">
         <div className="hp-section__inner">
           <div className="hp-section__header">
             <h2 className="hp-section__title">Order in 3 Simple Steps</h2>
             <p className="hp-section__sub">Simple, fast, and delivered to your doorstep</p>
           </div>
-          <div className="hp-steps">
+          <div className="hp-steps" style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '1rem' }}>
             {[
               { step: '01', icon: <Package size={32} />, title: 'Browse & Add to Cart', desc: 'Pick from 50+ fireworks varieties. Add quantities as you like.' },
               { step: '02', icon: <Phone size={32} />,   title: 'Place Order with Phone', desc: 'Enter your name, phone number, and delivery address to confirm.' },
@@ -326,24 +263,111 @@ export default function HomePage({ setCurrentView, onSelectCategory, onAddToCart
         </div>
       </section>
 
-      {/* ══════════════════ TESTIMONIALS ══════════════════ */}
+      {/* ══════════════════ TESTIMONIALS (AUTO-MOVING CAROUSEL) ══════════════════ */}
       <section className="hp-section hp-section--light">
         <div className="hp-section__inner">
           <div className="hp-section__header">
             <h2 className="hp-section__title">What Our Customers Say</h2>
             <p className="hp-section__sub">Trusted by thousands of families across India</p>
           </div>
-          <div className="hp-testimonials">
-            {TESTIMONIALS.map((t) => (
-              <div className="hp-testi" key={t.name}>
-                <div className="hp-testi__stars">{'⭐'.repeat(t.stars)}</div>
-                <p className="hp-testi__text">"{t.text}"</p>
-                <div className="hp-testi__author">
-                  <span className="hp-testi__name">{t.name}</span>
-                  <span className="hp-testi__city">📍 {t.city}</span>
-                </div>
+          <TestimonialsCarousel testimonials={TESTIMONIALS} />
+        </div>
+      </section>
+
+      {/* ══════════════════ SIVAKASI HUB LOCATION & DIRECT CONTACT ══════════════════ */}
+      <section className="hp-section" style={{ background: '#fffbeb', borderTop: '2px solid #fef3c7', borderBottom: '2px solid #fef3c7' }}>
+        <div className="hp-section__inner">
+          <div className="hp-section__header">
+            <h2 className="hp-section__title">📍 Direct Sivakasi Dispatch Hub &amp; Support</h2>
+            <p className="hp-section__sub">Call us anytime for bulk bookings, order inquiries or visit our hub directly in Sivakasi</p>
+          </div>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '1.25rem',
+            alignItems: 'stretch',
+          }}>
+            {/* Phones Card */}
+            <div style={{
+              background: '#fff',
+              border: '1px solid #fde68a',
+              borderRadius: '12px',
+              padding: '1.5rem',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
+            }}>
+              <h3 style={{ fontSize: '1.1rem', color: '#b91c1c', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0 0 1rem' }}>
+                <Phone size={20} /> Direct Helplines
+              </h3>
+              <p style={{ fontSize: '0.85rem', color: '#4b5563', marginBottom: '1rem' }}>
+                Tap any number below to call directly or message on WhatsApp:
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem' }}>
+                {PHONE_NUMBERS.map(ph => (
+                  <a
+                    key={ph}
+                    href={`tel:${ph.replace(/\s+/g, '')}`}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      background: '#fff8f6',
+                      border: '1px solid #fee2e2',
+                      padding: '0.55rem 0.75rem',
+                      borderRadius: '8px',
+                      color: '#b91c1c',
+                      fontWeight: 700,
+                      fontSize: '0.88rem',
+                      textDecoration: 'none',
+                    }}
+                  >
+                    📞 {ph}
+                  </a>
+                ))}
               </div>
-            ))}
+            </div>
+
+            {/* Google Maps Location Card */}
+            <div style={{
+              background: '#fff',
+              border: '1px solid #fde68a',
+              borderRadius: '12px',
+              padding: '1.5rem',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+            }}>
+              <div>
+                <h3 style={{ fontSize: '1.1rem', color: '#b91c1c', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0 0 0.5rem' }}>
+                  <MapPin size={20} /> Sivakasi Dispatch Center
+                </h3>
+                <p style={{ fontSize: '0.85rem', color: '#4b5563', lineHeight: '1.5', margin: '0 0 1rem' }}>
+                  Direct factory dispatches across Tamil Nadu, Bangalore, Hyderabad and all over India with secure parcel packaging.
+                </p>
+              </div>
+
+              <a
+                href={MAP_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  background: '#16a34a',
+                  color: '#fff',
+                  padding: '0.75rem 1.25rem',
+                  borderRadius: '8px',
+                  fontWeight: 700,
+                  fontSize: '0.92rem',
+                  textDecoration: 'none',
+                }}
+              >
+                <MapPin size={18} /> Open in Google Maps (9.421799, 77.807465)
+              </a>
+            </div>
           </div>
         </div>
       </section>
