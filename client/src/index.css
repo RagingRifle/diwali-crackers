@@ -151,9 +151,9 @@ body {
 }
 
 .navbar-brand-logo {
-  height: clamp(46px, 6.2vw, 66px);
+  height: clamp(56px, 7.5vw, 80px);
   width: auto;
-  max-width: clamp(150px, 24vw, 230px);
+  max-width: clamp(180px, 28vw, 280px);
   object-fit: contain;
   display: block;
   transition: transform 0.2s ease;
