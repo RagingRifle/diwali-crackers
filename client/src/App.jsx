@@ -74,13 +74,12 @@ export default function App() {
 
   // Cart actions
   const handleAddToCart = (product) => {
+    if (!product || !product.id) return;
     setCart((prev) => {
       const existing = prev.find((i) => i.id === product.id);
       if (existing) return prev.map((i) => i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i);
       return [...prev, { ...product, quantity: 1 }];
     });
-    // Open cart drawer after adding item
-    setIsCartOpen(true);
   };
 
   const handleUpdateQuantity = (productId, newQty) => {
@@ -154,7 +153,9 @@ export default function App() {
               setSelectedCategory(cat);
               setSearchQuery('');
             }}
+            cart={cart}
             onAddToCart={handleAddToCart}
+            onUpdateQuantity={handleUpdateQuantity}
           />
         )}
         {currentView === 'shop' && (

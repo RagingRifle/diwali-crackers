@@ -1,9 +1,9 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Sparkles, Shield, Truck, Flame, ArrowRight,
   Star, Package, Zap, Phone, CheckCircle, MapPin
 } from 'lucide-react';
-import heroBg from '../assets/diwali_hero.jpg';
+import heroBg from '../assets/diwali_hero.png';
 import ProductGrid from './ProductGrid';
 import FeaturedCombos from './FeaturedCombos';
 import TestimonialsCarousel from './TestimonialsCarousel';
@@ -62,7 +62,7 @@ const PHONE_NUMBERS = [
 ];
 const MAP_URL = 'https://maps.google.com/?q=9.421799,77.807465';
 
-export default function HomePage({ setCurrentView, onSelectCategory, onAddToCart }) {
+export default function HomePage({ setCurrentView, onSelectCategory, cart = [], onAddToCart, onUpdateQuantity }) {
   const { days, hours, minutes, seconds } = useCountdown('2026-11-08T00:00:00');
 
   const goShop = (cat) => {
@@ -71,9 +71,10 @@ export default function HomePage({ setCurrentView, onSelectCategory, onAddToCart
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleAddToCart = (e, product) => {
-    if (e && e.stopPropagation) e.stopPropagation();
-    if (onAddToCart) onAddToCart(product);
+  const handleAddToCart = (p1, p2) => {
+    if (p1 && p1.stopPropagation) p1.stopPropagation();
+    const product = (p1 && p1.id) ? p1 : (p2 && p2.id ? p2 : null);
+    if (product && onAddToCart) onAddToCart(product);
   };
 
   return (
@@ -133,7 +134,12 @@ export default function HomePage({ setCurrentView, onSelectCategory, onAddToCart
               Browse and add to cart directly from this scrollable box without leaving the page
             </p>
           </div>
-          <ProductGrid onAddToCart={handleAddToCart} onGoToCatalog={() => goShop()} />
+          <ProductGrid
+            cart={cart}
+            onAddToCart={handleAddToCart}
+            onUpdateQuantity={onUpdateQuantity}
+            onGoToCatalog={() => goShop()}
+          />
         </div>
       </section>
 

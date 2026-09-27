@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShoppingCart, Trash2, ShoppingBag } from 'lucide-react';
 
 export default function SelectedItemsSidebar({
@@ -8,6 +8,11 @@ export default function SelectedItemsSidebar({
   onOrderNow,
   minOrderValue = 3000,
 }) {
+  const [orderError, setOrderError] = useState('');
+
+  useEffect(() => {
+    setOrderError('');
+  }, [cart]);
   const totalItems = cart.reduce((s, i) => s + i.quantity, 0);
   const grossMRP = cart.reduce((s, i) => s + (i.mrp || i.price) * i.quantity, 0);
   const netTotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
@@ -102,24 +107,48 @@ export default function SelectedItemsSidebar({
             </div>
           </div>
 
-          {!isMinOrderMet && (
+          {!isMinOrderMet && netTotal > 0 && (
             <div style={{
+              fontSize: '0.78rem',
+              color: '#92400e',
               background: '#fffbeb',
-              border: '1px solid #fcd34d',
+              border: '1px solid #fef3c7',
+              borderRadius: '6px',
+              padding: '0.4rem 0.5rem',
+              margin: '0.4rem 0',
+              textAlign: 'center',
+              fontWeight: 600
+            }}>
+              Min. order value: ₹{minOrderValue.toLocaleString('en-IN')} (₹{shortfall.toFixed(0)} remaining to fulfill it)
+            </div>
+          )}
+
+          {orderError && !isMinOrderMet && (
+            <div style={{
+              background: '#fee2e2',
+              border: '1px solid #fca5a5',
               borderRadius: '6px',
               padding: '0.45rem 0.6rem',
               fontSize: '0.78rem',
-              color: '#92400e',
-              margin: '0.5rem 0 0.25rem',
-              lineHeight: 1.35
+              color: '#991b1b',
+              margin: '0.4rem 0',
+              fontWeight: 700,
+              textAlign: 'center'
             }}>
-              ⚠️ Min. order: <strong>₹{minOrderValue.toLocaleString('en-IN')}</strong>. Add <strong>₹{shortfall.toFixed(0)}</strong> more to checkout.
+              ⚠️ {orderError}
             </div>
           )}
 
           <button
             className="btn-order-now"
-            onClick={onOrderNow}
+            onClick={() => {
+              if (!isMinOrderMet) {
+                setOrderError(`Minimum order value is ₹${minOrderValue.toLocaleString('en-IN')}. Please add ₹${shortfall.toFixed(0)} more to checkout.`);
+                return;
+              }
+              setOrderError('');
+              onOrderNow();
+            }}
           >
             <ShoppingCart size={16} />
             Order Now

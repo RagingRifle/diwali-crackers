@@ -318,10 +318,6 @@ export default function InvoiceModal({ isOpen, onClose, order }) {
             <td>Factory Savings:</td>
             <td style="text-align:right;">−₹${totalSavings.toFixed(0)}</td>
           </tr>` : ''}
-          <tr>
-            <td>Delivery:</td>
-            <td style="text-align:right; color:#15803d; font-weight:700;">FREE</td>
-          </tr>
           <tr class="total">
             <td>Net Payable:</td>
             <td style="text-align:right;">₹${netTotal.toFixed(0)}</td>
@@ -559,10 +555,6 @@ export default function InvoiceModal({ isOpen, onClose, order }) {
                       <td style={{ padding: '2px 4px', textAlign: 'right' }}>−₹{totalSavings.toFixed(0)}</td>
                     </tr>
                   )}
-                  <tr>
-                    <td style={{ padding: '2px 4px' }}>Doorstep Delivery:</td>
-                    <td style={{ padding: '2px 4px', textAlign: 'right', color: '#15803d', fontWeight: 700 }}>FREE</td>
-                  </tr>
                   <tr style={{ borderTop: '1.5px solid #b91c1c', fontWeight: 900, fontSize: '0.95rem', color: '#b91c1c' }}>
                     <td style={{ padding: '4px 4px' }}>Net Payable:</td>
                     <td style={{ padding: '4px 4px', textAlign: 'right' }}>₹{netTotal.toFixed(0)}</td>

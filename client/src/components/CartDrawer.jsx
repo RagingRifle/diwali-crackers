@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { X, Trash2, Plus, Minus, ArrowRight, ShoppingBag, Sparkles } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Trash2, Plus, Minus, ArrowRight, ShoppingBag } from 'lucide-react';
 
 export default function CartDrawer({
   isOpen,
@@ -10,6 +10,13 @@ export default function CartDrawer({
   onProceedToCheckout,
   minOrderValue = 3000
 }) {
+  const [checkoutError, setCheckoutError] = useState('');
+
+  // Reset checkout error when drawer opens or cart changes
+  useEffect(() => {
+    setCheckoutError('');
+  }, [isOpen, cartItems]);
+
   // Close on Escape key
   useEffect(() => {
     if (!isOpen) return;
@@ -32,11 +39,7 @@ export default function CartDrawer({
 
   const isMinOrderMet = subtotal >= minOrderValue;
   const minOrderShortfall = Math.max(0, minOrderValue - subtotal);
-  const minOrderProgress = Math.min(100, Math.round((subtotal / minOrderValue) * 100));
-
-  const isFreeDelivery = true;
-  const deliveryFee = 0;
-  const finalTotal = subtotal + deliveryFee;
+  const finalTotal = subtotal;
 
   return (
     <div
@@ -66,56 +69,6 @@ export default function CartDrawer({
             <X size={20} />
           </button>
         </div>
-
-        {/* Minimum Order Value & Delivery Bar */}
-        {subtotal > 0 && (
-          <div style={{
-            background: isMinOrderMet ? '#ecfdf5' : '#fffbeb',
-            padding: '0.75rem 1.25rem',
-            borderBottom: '1px solid var(--border-light)'
-          }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              fontSize: '0.82rem',
-              fontWeight: 700,
-              color: isMinOrderMet ? '#065f46' : '#92400e',
-              marginBottom: isMinOrderMet ? 0 : '0.45rem',
-              gap: '0.5rem'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                <Sparkles size={16} />
-                <span>
-                  {isMinOrderMet
-                    ? `🎉 Min. order ₹${minOrderValue.toLocaleString('en-IN')} reached! Free Express Delivery unlocked!`
-                    : `Min. order is ₹${minOrderValue.toLocaleString('en-IN')} (Add ₹${minOrderShortfall.toLocaleString('en-IN')} more)`}
-                </span>
-              </div>
-              {!isMinOrderMet && (
-                <span style={{ fontSize: '0.78rem', fontWeight: 800 }}>{minOrderProgress}%</span>
-              )}
-            </div>
-
-            {!isMinOrderMet && (
-              <div style={{
-                width: '100%',
-                height: '7px',
-                background: '#fef3c7',
-                borderRadius: '999px',
-                overflow: 'hidden'
-              }}>
-                <div style={{
-                  width: `${minOrderProgress}%`,
-                  height: '100%',
-                  background: '#d97706',
-                  borderRadius: '999px',
-                  transition: 'width 0.3s ease'
-                }} />
-              </div>
-            )}
-          </div>
-        )}
 
         {/* Items List */}
         <div className="drawer-items">
@@ -202,35 +155,51 @@ export default function CartDrawer({
                   <span>- ₹{totalSavings}</span>
                 </div>
               )}
-              <div className="breakdown-row">
-                <span>Safe Delivery Fee</span>
-                <span>{deliveryFee === 0 ? <strong style={{ color: 'var(--green)' }}>FREE</strong> : `₹${deliveryFee}`}</span>
-              </div>
               <div className="breakdown-row total">
                 <span>Estimated Total</span>
                 <span className="amount">₹{finalTotal}</span>
               </div>
+              {!isMinOrderMet && subtotal > 0 && (
+                <div style={{
+                  fontSize: '0.82rem',
+                  color: '#92400e',
+                  marginTop: '0.6rem',
+                  padding: '0.45rem 0.75rem',
+                  background: '#fffbeb',
+                  borderRadius: '6px',
+                  textAlign: 'center',
+                  fontWeight: 600,
+                  border: '1px solid #fef3c7'
+                }}>
+                  Min. order value: ₹{minOrderValue.toLocaleString('en-IN')} (₹{minOrderShortfall.toLocaleString('en-IN')} remaining to fulfill it)
+                </div>
+              )}
             </div>
 
-            {!isMinOrderMet && (
+            {checkoutError && !isMinOrderMet && (
               <div style={{
-                background: '#fffbeb',
-                border: '1px solid #fef3c7',
+                background: '#fee2e2',
+                border: '1px solid #fca5a5',
                 borderRadius: '8px',
-                padding: '0.55rem 0.75rem',
-                fontSize: '0.8rem',
-                color: '#92400e',
+                padding: '0.6rem 0.85rem',
+                fontSize: '0.82rem',
+                color: '#991b1b',
                 marginBottom: '0.75rem',
                 textAlign: 'center',
-                fontWeight: 600
+                fontWeight: 700
               }}>
-                ⚠️ Minimum order is ₹{minOrderValue.toLocaleString('en-IN')}. Add ₹{minOrderShortfall.toLocaleString('en-IN')} more before checking out.
+                ⚠️ {checkoutError}
               </div>
             )}
 
             <button
               className="btn-proceed-checkout"
               onClick={() => {
+                if (!isMinOrderMet) {
+                  setCheckoutError(`Minimum order value is ₹${minOrderValue.toLocaleString('en-IN')}. Please add ₹${minOrderShortfall.toLocaleString('en-IN')} more to proceed with checkout.`);
+                  return;
+                }
+                setCheckoutError('');
                 onClose();
                 onProceedToCheckout();
               }}

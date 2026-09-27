@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import ProductRowItem from './ProductRowItem';
 import { Search, Flame, ArrowRight } from 'lucide-react';
 
-export default function ProductGrid({ onAddToCart, onGoToCatalog }) {
+export default function ProductGrid({ cart = [], onAddToCart, onUpdateQuantity, onGoToCatalog }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -159,14 +159,18 @@ export default function ProductGrid({ onAddToCart, onGoToCatalog }) {
             <p style={{ margin: 0, fontWeight: 600 }}>No crackers found matching "{search}".</p>
           </div>
         ) : (
-          filtered.map(p => (
-            <ProductRowItem
-              key={p.id}
-              product={p}
-              onAddToCart={onAddToCart}
-              onUpdateQuantity={() => {}}
-            />
-          ))
+          filtered.map(p => {
+            const cartItem = cart?.find(i => i.id === p.id);
+            return (
+              <ProductRowItem
+                key={p.id}
+                product={p}
+                cartItem={cartItem}
+                onAddToCart={onAddToCart}
+                onUpdateQuantity={onUpdateQuantity}
+              />
+            );
+          })
         )}
       </div>
 

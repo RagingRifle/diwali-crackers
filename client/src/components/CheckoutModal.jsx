@@ -25,9 +25,7 @@ export default function CheckoutModal({
 
   const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   const isMinOrderMet = subtotal >= minOrderValue;
-  const isFreeDelivery = true;
-  const deliveryFee = 0;
-  const finalTotal = subtotal + deliveryFee;
+  const finalTotal = subtotal;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -285,7 +283,7 @@ export default function CheckoutModal({
                 textAlign: 'center',
                 lineHeight: 1.5
               }}>
-                🛒 Your cart total is ₹{subtotal.toLocaleString('en-IN')}. Minimum order value is <strong>₹{minOrderValue.toLocaleString('en-IN')}</strong>. Please go back and add ₹{(minOrderValue - subtotal).toLocaleString('en-IN')} more worth of crackers to proceed.
+                🛒 Min. order value: <strong>₹{minOrderValue.toLocaleString('en-IN')}</strong> (₹{(minOrderValue - subtotal).toLocaleString('en-IN')} remaining to fulfill it). Please add items to proceed.
               </div>
             )}
 
