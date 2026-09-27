@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import ProductRowItem from './ProductRowItem';
-import { Search, Flame, ArrowRight } from 'lucide-react';
+import { Search, ArrowRight } from 'lucide-react';
 
 export default function ProductGrid({ cart = [], onAddToCart, onUpdateQuantity, onGoToCatalog }) {
   const [products, setProducts] = useState([]);
@@ -67,7 +67,6 @@ export default function ProductGrid({ cart = [], onAddToCart, onUpdateQuantity, 
         justifyContent: 'space-between',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Flame size={20} color="#b91c1c" />
           <span style={{ fontWeight: 800, fontSize: '1.05rem', color: '#1f2937' }}>
             Explore All Crackers ({filtered.length})
           </span>

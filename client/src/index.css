@@ -151,9 +151,9 @@ body {
 }
 
 .navbar-brand-logo {
-  height: clamp(28px, 4.2vw, 42px);
+  height: clamp(46px, 6.2vw, 66px);
   width: auto;
-  max-width: clamp(95px, 20vw, 155px);
+  max-width: clamp(150px, 24vw, 230px);
   object-fit: contain;
   display: block;
   transition: transform 0.2s ease;
@@ -1781,8 +1781,8 @@ table.admin-table tr:hover {
   }
 
   .navbar-brand-logo {
-    height: 32px;
-    max-width: 110px;
+    height: 46px;
+    max-width: 155px;
   }
 
   .nav-links {
@@ -3995,16 +3995,72 @@ table.admin-table tr:hover {
 
 /* ── Responsive ──────────────────────────────────────── */
 @media (max-width: 768px) {
+  .hp-hero {
+    display: flex;
+    flex-direction: column;
+    background: #110503;
+    line-height: normal;
+  }
+
+  .hp-hero__bg {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: contain;
+  }
+
   .hp-hero__shopbtn {
-    left: 1rem;
-    bottom: 5rem;
+    position: static;
+    padding: 0.85rem 1rem 0.35rem;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+  }
+
+  .hp-hero__shopbtn .hp-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 0.85rem 1.25rem;
+    font-size: 1.05rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(211, 47, 47, 0.45);
   }
 
   .hp-countdown {
-    bottom: 0.75rem;
-    right: 0.75rem;
-    left: 0.75rem;
+    position: static;
+    margin: 0.4rem 1rem 1rem;
+    padding: 0.75rem 0.85rem;
+    border-radius: 12px;
     min-width: unset;
+    box-sizing: border-box;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 215, 0, 0.35);
+  }
+
+  .hp-countdown__label {
+    font-size: 0.75rem;
+    margin-bottom: 0.45rem;
+  }
+
+  .hp-countdown__timer {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.4rem;
+    justify-content: center;
+  }
+
+  .hp-countdown__unit {
+    min-width: unset;
+    padding: 0.4rem 0.25rem;
+    border-radius: 8px;
+  }
+
+  .hp-countdown__num {
+    font-size: 1.35rem;
+  }
+
+  .hp-countdown__lbl {
+    font-size: 0.62rem;
   }
 
   .hp-stats__item {

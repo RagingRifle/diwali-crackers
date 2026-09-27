@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Sparkles, Shield, Truck, Flame, ArrowRight,
+  Sparkles, Shield, Truck, ArrowRight,
   Star, Package, Zap, Phone, CheckCircle, MapPin
 } from 'lucide-react';
 import heroBg from '../assets/diwali_hero.png';
@@ -86,7 +86,8 @@ export default function HomePage({ setCurrentView, onSelectCategory, cart = [], 
         {/* Shop Now — bottom left */}
         <div className="hp-hero__shopbtn">
           <button className="hp-btn hp-btn--primary" onClick={() => goShop()}>
-            <Flame size={18} />Shop Now<ArrowRight size={16} />
+            <span>Shop Now</span>
+            <ArrowRight size={16} />
           </button>
         </div>
         {/* Countdown — bottom right */}
@@ -150,7 +151,10 @@ export default function HomePage({ setCurrentView, onSelectCategory, cart = [], 
             <div className="hp-feature-banner__badge">🎆 Special Festive Offer</div>
             <h2>Authentic Sivakasi Crackers</h2>
             <p>Light up your celebrations with genuine sparklers, flower pots, sky shots &amp; sound crackers. <strong>Up to 85% OFF</strong> factory direct pricing from Dinosaur Crackers!</p>
-            <button className="hp-btn hp-btn--primary" onClick={() => goShop()}><Flame size={18} />Shop Crackers Now<ArrowRight size={16} /></button>
+            <button className="hp-btn hp-btn--primary" onClick={() => goShop()}>
+              <span>Shop Crackers Now</span>
+              <ArrowRight size={16} />
+            </button>
           </div>
           <div className="hp-feature-banner__visual">
             <div className="hp-feature-banner__burst">85% OFF</div>
@@ -204,7 +208,8 @@ export default function HomePage({ setCurrentView, onSelectCategory, cart = [], 
           </div>
           <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
             <button className="hp-btn hp-btn--primary hp-btn--lg" onClick={() => goShop()}>
-              <Flame size={20} /> Start Shopping Now <ArrowRight size={18} />
+              <span>Start Shopping Now</span>
+              <ArrowRight size={18} />
             </button>
           </div>
         </div>

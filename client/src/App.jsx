@@ -8,7 +8,7 @@ import CheckoutModal from './components/CheckoutModal';
 import OrderSuccessModal from './components/OrderSuccessModal';
 import TrackOrderPage from './components/TrackOrderPage';
 import InvoiceModal from './components/InvoiceModal';
-import { Search, Flame, ArrowRight } from 'lucide-react';
+import { Search, ArrowRight } from 'lucide-react';
 import HomePage from './components/HomePage';
 
 export default function App() {
@@ -80,6 +80,8 @@ export default function App() {
       if (existing) return prev.map((i) => i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i);
       return [...prev, { ...product, quantity: 1 }];
     });
+    // Open cart popup/drawer every time product is added
+    setIsCartOpen(true);
   };
 
   const handleUpdateQuantity = (productId, newQty) => {
@@ -224,7 +226,6 @@ export default function App() {
                 {/* Header */}
                 <div className="catalog-center__header">
                   <div className="catalog-center__title">
-                    <Flame size={18} style={{ color: '#e84040' }} />
                     <span>
                       {selectedCategory === 'All' ? 'All Products' : selectedCategory}
                     </span>
