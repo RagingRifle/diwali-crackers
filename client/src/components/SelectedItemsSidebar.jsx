@@ -113,18 +113,16 @@ export default function SelectedItemsSidebar({
               margin: '0.5rem 0 0.25rem',
               lineHeight: 1.35
             }}>
-              ⚠️ Min. order value: <strong>₹{minOrderValue.toLocaleString('en-IN')}</strong>. Add <strong>₹{shortfall.toFixed(0)}</strong> more to proceed.
+              ⚠️ Min. order: <strong>₹{minOrderValue.toLocaleString('en-IN')}</strong>. Add <strong>₹{shortfall.toFixed(0)}</strong> more to checkout.
             </div>
           )}
 
           <button
-            className={`btn-order-now ${!isMinOrderMet ? 'btn-order-now--disabled' : ''}`}
-            onClick={isMinOrderMet ? onOrderNow : undefined}
-            disabled={!isMinOrderMet}
-            title={!isMinOrderMet ? `Minimum order value is ₹${minOrderValue.toLocaleString('en-IN')}` : 'Proceed to Checkout'}
+            className="btn-order-now"
+            onClick={onOrderNow}
           >
             <ShoppingCart size={16} />
-            {isMinOrderMet ? 'Order Now' : `Order Now (Min ₹${minOrderValue.toLocaleString('en-IN')})`}
+            Order Now
           </button>
         </>
       )}

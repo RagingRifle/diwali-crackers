@@ -224,33 +224,19 @@ export default function CartDrawer({
                 textAlign: 'center',
                 fontWeight: 600
               }}>
-                ⚠️ Add items worth ₹{minOrderShortfall.toLocaleString('en-IN')} more to reach the ₹{minOrderValue.toLocaleString('en-IN')} minimum order requirement.
+                ⚠️ Minimum order is ₹{minOrderValue.toLocaleString('en-IN')}. Add ₹{minOrderShortfall.toLocaleString('en-IN')} more before checking out.
               </div>
             )}
 
             <button
               className="btn-proceed-checkout"
-              disabled={!isMinOrderMet}
               onClick={() => {
-                if (!isMinOrderMet) return;
                 onClose();
                 onProceedToCheckout();
               }}
-              style={{
-                opacity: isMinOrderMet ? 1 : 0.65,
-                cursor: isMinOrderMet ? 'pointer' : 'not-allowed',
-                background: isMinOrderMet ? 'var(--primary-red)' : '#6b7280',
-                boxShadow: isMinOrderMet ? '0 4px 14px rgba(211, 47, 47, 0.3)' : 'none'
-              }}
             >
-              {isMinOrderMet ? (
-                <>
-                  <span>Submit Cart & Fill Delivery Form</span>
-                  <ArrowRight size={18} />
-                </>
-              ) : (
-                <span>Add ₹{minOrderShortfall.toLocaleString('en-IN')} More to Checkout</span>
-              )}
+              <span>Submit Cart & Fill Delivery Form</span>
+              <ArrowRight size={18} />
             </button>
           </div>
         )}

@@ -274,33 +274,28 @@ export default function CheckoutModal({
 
             {!isMinOrderMet && (
               <div style={{
-                background: '#fffbeb',
-                color: '#92400e',
-                padding: '0.75rem 1rem',
+                background: '#FEE2E2',
+                color: '#991B1B',
+                padding: '0.85rem 1rem',
                 borderRadius: 'var(--radius-md)',
-                fontSize: '0.85rem',
+                fontSize: '0.88rem',
                 marginBottom: '1rem',
-                border: '1px solid #fcd34d',
+                border: '1px solid #FCA5A5',
                 fontWeight: 600,
-                textAlign: 'center'
+                textAlign: 'center',
+                lineHeight: 1.5
               }}>
-                ⚠️ Minimum order value is ₹{minOrderValue.toLocaleString('en-IN')}. Please add items worth ₹{(minOrderValue - subtotal).toLocaleString('en-IN')} more to proceed with delivery.
+                🛒 Your cart total is ₹{subtotal.toLocaleString('en-IN')}. Minimum order value is <strong>₹{minOrderValue.toLocaleString('en-IN')}</strong>. Please go back and add ₹{(minOrderValue - subtotal).toLocaleString('en-IN')} more worth of crackers to proceed.
               </div>
             )}
 
             <button
               type="submit"
               className="btn-submit-order"
-              disabled={loading || !isMinOrderMet}
-              style={{
-                opacity: (!isMinOrderMet || loading) ? 0.6 : 1,
-                cursor: (!isMinOrderMet || loading) ? 'not-allowed' : 'pointer'
-              }}
+              disabled={loading}
             >
               {loading ? (
                 <span>Submitting Your Festive Order...</span>
-              ) : !isMinOrderMet ? (
-                <span>Minimum Order ₹{minOrderValue.toLocaleString('en-IN')} Required</span>
               ) : (
                 <>
                   <Send size={18} />
