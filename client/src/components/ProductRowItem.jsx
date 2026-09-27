@@ -88,7 +88,7 @@ export default function ProductRowItem({ product, cartItem, onAddToCart, onUpdat
 
         {/* Info */}
         <div className="product-row__info">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+          <div className="product-row__title-wrap">
             {isCombo && (
               <span style={{
                 background: '#b91c1c',

@@ -8,7 +8,7 @@ import CheckoutModal from './components/CheckoutModal';
 import OrderSuccessModal from './components/OrderSuccessModal';
 import TrackOrderPage from './components/TrackOrderPage';
 import InvoiceModal from './components/InvoiceModal';
-import { Search, Flame } from 'lucide-react';
+import { Search, Flame, ArrowRight } from 'lucide-react';
 import HomePage from './components/HomePage';
 
 export default function App() {
@@ -131,6 +131,7 @@ export default function App() {
 
   const totalItems = products.filter(p => p.in_stock !== 0).length;
   const cartTotalCount = cart.reduce((s, i) => s + i.quantity, 0);
+  const cartSubtotal = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
 
   return (
     <div className="app-layout" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -138,6 +139,7 @@ export default function App() {
         currentView={currentView}
         setCurrentView={setCurrentView}
         cartCount={cartTotalCount}
+        isCartOpen={isCartOpen}
         setIsCartOpen={setIsCartOpen}
         announcementText={siteSettings.top_announcement_bar}
       />
@@ -239,6 +241,16 @@ export default function App() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      className="catalog-search-clear"
+                      onClick={() => setSearchQuery('')}
+                      aria-label="Clear search query"
+                    >
+                      ✕
+                    </button>
+                  )}
                 </div>
 
                 {/* Product rows, grouped by category */}
@@ -283,6 +295,28 @@ export default function App() {
                 />
               </div>
             </div>
+
+            {/* ── MOBILE FLOATING CART BAR ── */}
+            {cartTotalCount > 0 && !isCartOpen && (
+              <div className="mobile-floating-cart-bar">
+                <div className="mobile-floating-cart-bar__info">
+                  <span className="mobile-floating-cart-bar__count">
+                    {cartTotalCount} {cartTotalCount === 1 ? 'ITEM' : 'ITEMS'}
+                  </span>
+                  <span className="mobile-floating-cart-bar__total">
+                    ₹{cartSubtotal}
+                  </span>
+                </div>
+                <button
+                  className="mobile-floating-cart-bar__btn"
+                  onClick={() => setIsCartOpen(true)}
+                  aria-label="View Shopping Cart"
+                >
+                  <span>View Cart</span>
+                  <ArrowRight size={16} />
+                </button>
+              </div>
+            )}
           </>
         )}
 

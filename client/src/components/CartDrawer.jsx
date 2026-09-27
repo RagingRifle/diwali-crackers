@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { X, Trash2, Plus, Minus, ArrowRight, ShoppingBag, Sparkles } from 'lucide-react';
 
 export default function CartDrawer({
@@ -9,6 +9,18 @@ export default function CartDrawer({
   onRemoveItem,
   onProceedToCheckout
 }) {
+  // Close on Escape key
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
@@ -30,6 +42,9 @@ export default function CartDrawer({
           onClose();
         }
       }}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Shopping Cart Drawer"
     >
       <div
         className="cart-drawer"
