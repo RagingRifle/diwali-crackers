@@ -62,6 +62,8 @@ export default function AdminDashboard({ adminUser, onLogout, onProductChange })
   // Top Announcement Bar editor
   const [announcementText, setAnnouncementText] = useState('Sivakasi Fresh Quality Crackers • Diwali 2026 Festive Sale • 🚀 Express Doorstep Dispatch & Real-Time Tracking');
   const [savingAnnouncement, setSavingAnnouncement] = useState(false);
+  const [minOrderText, setMinOrderText] = useState('3000');
+  const [savingMinOrder, setSavingMinOrder] = useState(false);
 
   // Tracking modal inputs
   const [trackingForm, setTrackingForm] = useState({
@@ -181,13 +183,18 @@ export default function AdminDashboard({ adminUser, onLogout, onProductChange })
     }
   };
 
-  // Fetch Settings (e.g. Announcement Bar)
+  // Fetch Settings (e.g. Announcement Bar & Minimum Order Value)
   const fetchSettings = async () => {
     try {
       const res = await fetch('/api/settings');
       const data = await res.json();
-      if (data.success && data.settings?.top_announcement_bar) {
-        setAnnouncementText(data.settings.top_announcement_bar);
+      if (data.success && data.settings) {
+        if (data.settings.top_announcement_bar) {
+          setAnnouncementText(data.settings.top_announcement_bar);
+        }
+        if (data.settings.minimum_order_value) {
+          setMinOrderText(data.settings.minimum_order_value);
+        }
       }
     } catch (e) {
       console.error('Settings error', e);
@@ -213,6 +220,28 @@ export default function AdminDashboard({ adminUser, onLogout, onProductChange })
       alert('Error updating announcement');
     } finally {
       setSavingAnnouncement(false);
+    }
+  };
+
+  const handleSaveMinOrder = async () => {
+    try {
+      setSavingMinOrder(true);
+      const res = await fetch('/api/settings', {
+        method: 'PUT',
+        headers: getAuthHeader(),
+        body: JSON.stringify({ minimum_order_value: minOrderText })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(`Minimum order value updated successfully to ₹${minOrderText}!`);
+        if (onProductChange) onProductChange();
+      } else {
+        alert(data.error || 'Failed to update minimum order value');
+      }
+    } catch (e) {
+      alert('Error updating minimum order value');
+    } finally {
+      setSavingMinOrder(false);
     }
   };
 
@@ -681,48 +710,101 @@ export default function AdminDashboard({ adminUser, onLogout, onProductChange })
         </div>
       </div>
 
-      {/* Top Announcement Bar Manager */}
+      {/* Settings Panel: Announcement Bar & Minimum Order Value */}
       <div style={{
         background: '#fff',
         border: '1px solid #fee2e2',
         borderRadius: '10px',
-        padding: '0.75rem 1.25rem',
+        padding: '0.85rem 1.25rem',
         margin: '1rem 0',
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: '0.75rem',
+        flexDirection: 'column',
+        gap: '0.85rem',
         boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: '220px' }}>
-          <span style={{ fontSize: '1.2rem' }}>📢</span>
-          <div>
-            <strong style={{ fontSize: '0.88rem', color: '#991b1b' }}>Top Announcement Bar Text:</strong>
-            <p style={{ margin: 0, fontSize: '0.75rem', color: '#6b7280' }}>
-              Displayed on top of the entire website. If text is long, it will continuously scroll past.
-            </p>
+        {/* Row 1: Top Announcement Bar */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '0.75rem'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: '220px' }}>
+            <span style={{ fontSize: '1.2rem' }}>📢</span>
+            <div>
+              <strong style={{ fontSize: '0.88rem', color: '#991b1b' }}>Top Announcement Bar Text:</strong>
+              <p style={{ margin: 0, fontSize: '0.75rem', color: '#6b7280' }}>
+                Displayed on top of the entire website. If text is long, it will continuously scroll past.
+              </p>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: '1 1 350px' }}>
+            <input
+              type="text"
+              className="form-control"
+              value={announcementText}
+              onChange={(e) => setAnnouncementText(e.target.value)}
+              placeholder="e.g. Sivakasi Fresh Quality Crackers • Diwali 2026 Festive Sale • 🚀 Express Doorstep Dispatch"
+              style={{ fontSize: '0.85rem', flex: 1 }}
+            />
+            <button
+              type="button"
+              className="btn-action"
+              style={{ background: 'var(--primary-red)', color: '#fff', borderColor: 'var(--primary-red)', fontWeight: 700, whiteSpace: 'nowrap' }}
+              onClick={handleSaveAnnouncement}
+              disabled={savingAnnouncement}
+            >
+              {savingAnnouncement ? 'Saving...' : 'Save Announcement'}
+            </button>
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: '1 1 350px' }}>
-          <input
-            type="text"
-            className="form-control"
-            value={announcementText}
-            onChange={(e) => setAnnouncementText(e.target.value)}
-            placeholder="e.g. Sivakasi Fresh Quality Crackers • Diwali 2026 Festive Sale • 🚀 Express Doorstep Dispatch"
-            style={{ fontSize: '0.85rem', flex: 1 }}
-          />
-          <button
-            type="button"
-            className="btn-action"
-            style={{ background: 'var(--primary-red)', color: '#fff', borderColor: 'var(--primary-red)', fontWeight: 700, whiteSpace: 'nowrap' }}
-            onClick={handleSaveAnnouncement}
-            disabled={savingAnnouncement}
-          >
-            {savingAnnouncement ? 'Saving...' : 'Save Announcement'}
-          </button>
+        <div style={{ borderTop: '1px dashed #fecaca', width: '100%' }} />
+
+        {/* Row 2: Minimum Order Value */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '0.75rem'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: '220px' }}>
+            <span style={{ fontSize: '1.2rem' }}>💰</span>
+            <div>
+              <strong style={{ fontSize: '0.88rem', color: '#991b1b' }}>Minimum Order Value (₹):</strong>
+              <p style={{ margin: 0, fontSize: '0.75rem', color: '#6b7280' }}>
+                Minimum cart value required for customer orders to be placed across the store.
+              </p>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: '0 1 350px' }}>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', flex: 1 }}>
+              <span style={{ position: 'absolute', left: '10px', fontWeight: 700, color: '#6b7280', fontSize: '0.9rem' }}>₹</span>
+              <input
+                type="number"
+                min="0"
+                step="100"
+                className="form-control"
+                value={minOrderText}
+                onChange={(e) => setMinOrderText(e.target.value)}
+                placeholder="3000"
+                style={{ fontSize: '0.85rem', paddingLeft: '1.75rem', flex: 1 }}
+              />
+            </div>
+            <button
+              type="button"
+              className="btn-action"
+              style={{ background: 'var(--primary-red)', color: '#fff', borderColor: 'var(--primary-red)', fontWeight: 700, whiteSpace: 'nowrap' }}
+              onClick={handleSaveMinOrder}
+              disabled={savingMinOrder}
+            >
+              {savingMinOrder ? 'Saving...' : 'Save Min Order'}
+            </button>
+          </div>
         </div>
       </div>
 

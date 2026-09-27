@@ -141,6 +141,15 @@ function initTables(db) {
       ]);
       console.log('Seeded default announcement bar setting');
     }
+
+    const minOrder = db.get("SELECT * FROM settings WHERE key = ?", ['minimum_order_value']);
+    if (!minOrder) {
+      db.run("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", [
+        'minimum_order_value',
+        '3000'
+      ]);
+      console.log('Seeded default minimum order value setting (3000)');
+    }
   } catch (e) {
     console.error('Error seeding settings:', e.message);
   }

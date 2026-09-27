@@ -93,8 +93,8 @@ export default function HomePage({ setCurrentView, onSelectCategory, onAddToCart
           </div>
           <div className="hp-hero__pills">
             <span className="hp-pill">✨ 100% Quality Assured</span>
-            <span className="hp-pill">🚚 Safe and Secure Packaging</span>
-            <span className="hp-pill">📦 Doorstep Delivery</span>
+            <span className="hp-pill">🚚 Safe & Secure Packaging</span>
+            <span className="hp-pill">📦 Min Order ₹3,000</span>
             <span className="hp-pill">📱 Live Tracking</span>
           </div>
         </div>
@@ -193,7 +193,7 @@ export default function HomePage({ setCurrentView, onSelectCategory, onAddToCart
           </div>
           <div className="hp-steps" style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '1rem' }}>
             {[
-              { step: '01', icon: <Package size={32} />, title: 'Browse & Add to Cart', desc: 'Pick from 50+ fireworks varieties. Add quantities as you like.' },
+              { step: '01', icon: <Package size={32} />, title: 'Browse & Add to Cart', desc: 'Pick from 50+ fireworks varieties (Min. order ₹3,000). Add quantities as you like.' },
               { step: '02', icon: <Phone size={32} />,   title: 'Place Order with Phone', desc: 'Enter your name, phone number, and delivery address to confirm.' },
               { step: '03', icon: <CheckCircle size={32} />, title: 'Track & Celebrate!', desc: 'Track live with your phone number and burst crackers when it arrives!' },
             ].map((s) => (

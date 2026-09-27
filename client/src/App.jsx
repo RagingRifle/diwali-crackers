@@ -19,7 +19,8 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [siteSettings, setSiteSettings] = useState({
-    top_announcement_bar: '✨ Sivakasi Fresh Quality Crackers • Diwali 2026 Festive Sale • 🚀 Express Doorstep Dispatch & Real-Time Tracking'
+    top_announcement_bar: '✨ Sivakasi Fresh Quality Crackers • Min. Order ₹3,000 • Diwali 2026 Festive Sale • 🚀 Express Doorstep Dispatch & Real-Time Tracking',
+    minimum_order_value: '3000'
   });
 
   // Cart
@@ -132,6 +133,7 @@ export default function App() {
   const totalItems = products.filter(p => p.in_stock !== 0).length;
   const cartTotalCount = cart.reduce((s, i) => s + i.quantity, 0);
   const cartSubtotal = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
+  const minOrderValue = Number(siteSettings.minimum_order_value) || 3000;
 
   return (
     <div className="app-layout" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -292,6 +294,7 @@ export default function App() {
                   onUpdateQuantity={handleUpdateQuantity}
                   onRemoveItem={handleRemoveCartItem}
                   onOrderNow={() => setIsCheckoutOpen(true)}
+                  minOrderValue={minOrderValue}
                 />
               </div>
             </div>
@@ -305,6 +308,11 @@ export default function App() {
                   </span>
                   <span className="mobile-floating-cart-bar__total">
                     ₹{cartSubtotal}
+                    {cartSubtotal < minOrderValue && (
+                      <span style={{ fontSize: '0.72rem', opacity: 0.88, marginLeft: '0.35rem', fontWeight: 600 }}>
+                        (Min ₹{minOrderValue.toLocaleString('en-IN')})
+                      </span>
+                    )}
                   </span>
                 </div>
                 <button
@@ -336,6 +344,7 @@ export default function App() {
         onUpdateQuantity={handleUpdateQuantity}
         onRemoveItem={handleRemoveCartItem}
         onProceedToCheckout={() => setIsCheckoutOpen(true)}
+        minOrderValue={minOrderValue}
       />
 
       {/* Checkout Modal */}
@@ -344,6 +353,7 @@ export default function App() {
         onClose={() => setIsCheckoutOpen(false)}
         cartItems={cart}
         onOrderSuccess={handleOrderSuccess}
+        minOrderValue={minOrderValue}
       />
 
       {/* Order Success Modal */}

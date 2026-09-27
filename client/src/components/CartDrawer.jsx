@@ -7,7 +7,8 @@ export default function CartDrawer({
   cartItems,
   onUpdateQuantity,
   onRemoveItem,
-  onProceedToCheckout
+  onProceedToCheckout,
+  minOrderValue = 3000
 }) {
   // Close on Escape key
   useEffect(() => {
@@ -28,6 +29,10 @@ export default function CartDrawer({
     const savingPerItem = (item.mrp && item.mrp > item.price) ? (item.mrp - item.price) : 0;
     return acc + (savingPerItem * item.quantity);
   }, 0);
+
+  const isMinOrderMet = subtotal >= minOrderValue;
+  const minOrderShortfall = Math.max(0, minOrderValue - subtotal);
+  const minOrderProgress = Math.min(100, Math.round((subtotal / minOrderValue) * 100));
 
   const isFreeDelivery = subtotal >= 999;
   const deliveryFee = subtotal === 0 ? 0 : (isFreeDelivery ? 0 : 99);
@@ -62,25 +67,53 @@ export default function CartDrawer({
           </button>
         </div>
 
-        {/* Free delivery bar */}
+        {/* Minimum Order Value & Delivery Bar */}
         {subtotal > 0 && (
           <div style={{
-            background: isFreeDelivery ? 'var(--green-light)' : 'var(--primary-red-light)',
-            padding: '0.65rem 1.25rem',
-            fontSize: '0.82rem',
-            fontWeight: 700,
-            color: isFreeDelivery ? 'var(--green)' : 'var(--primary-red)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
+            background: isMinOrderMet ? '#ecfdf5' : '#fffbeb',
+            padding: '0.75rem 1.25rem',
             borderBottom: '1px solid var(--border-light)'
           }}>
-            <Sparkles size={16} />
-            <span>
-              {isFreeDelivery
-                ? '🎉 Congratulations! You unlocked Free Express Festive Delivery!'
-                : `Add ₹${999 - subtotal} more for Free Festive Doorstep Delivery!`}
-            </span>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              fontSize: '0.82rem',
+              fontWeight: 700,
+              color: isMinOrderMet ? '#065f46' : '#92400e',
+              marginBottom: isMinOrderMet ? 0 : '0.45rem',
+              gap: '0.5rem'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                <Sparkles size={16} />
+                <span>
+                  {isMinOrderMet
+                    ? `🎉 Min. order ₹${minOrderValue.toLocaleString('en-IN')} reached! Free Express Delivery unlocked!`
+                    : `Min. order is ₹${minOrderValue.toLocaleString('en-IN')} (Add ₹${minOrderShortfall.toLocaleString('en-IN')} more)`}
+                </span>
+              </div>
+              {!isMinOrderMet && (
+                <span style={{ fontSize: '0.78rem', fontWeight: 800 }}>{minOrderProgress}%</span>
+              )}
+            </div>
+
+            {!isMinOrderMet && (
+              <div style={{
+                width: '100%',
+                height: '7px',
+                background: '#fef3c7',
+                borderRadius: '999px',
+                overflow: 'hidden'
+              }}>
+                <div style={{
+                  width: `${minOrderProgress}%`,
+                  height: '100%',
+                  background: '#d97706',
+                  borderRadius: '999px',
+                  transition: 'width 0.3s ease'
+                }} />
+              </div>
+            )}
           </div>
         )}
 
@@ -179,15 +212,45 @@ export default function CartDrawer({
               </div>
             </div>
 
+            {!isMinOrderMet && (
+              <div style={{
+                background: '#fffbeb',
+                border: '1px solid #fef3c7',
+                borderRadius: '8px',
+                padding: '0.55rem 0.75rem',
+                fontSize: '0.8rem',
+                color: '#92400e',
+                marginBottom: '0.75rem',
+                textAlign: 'center',
+                fontWeight: 600
+              }}>
+                ⚠️ Add items worth ₹{minOrderShortfall.toLocaleString('en-IN')} more to reach the ₹{minOrderValue.toLocaleString('en-IN')} minimum order requirement.
+              </div>
+            )}
+
             <button
               className="btn-proceed-checkout"
+              disabled={!isMinOrderMet}
               onClick={() => {
+                if (!isMinOrderMet) return;
                 onClose();
                 onProceedToCheckout();
               }}
+              style={{
+                opacity: isMinOrderMet ? 1 : 0.65,
+                cursor: isMinOrderMet ? 'pointer' : 'not-allowed',
+                background: isMinOrderMet ? 'var(--primary-red)' : '#6b7280',
+                boxShadow: isMinOrderMet ? '0 4px 14px rgba(211, 47, 47, 0.3)' : 'none'
+              }}
             >
-              <span>Submit Cart & Fill Delivery Form</span>
-              <ArrowRight size={18} />
+              {isMinOrderMet ? (
+                <>
+                  <span>Submit Cart & Fill Delivery Form</span>
+                  <ArrowRight size={18} />
+                </>
+              ) : (
+                <span>Add ₹{minOrderShortfall.toLocaleString('en-IN')} More to Checkout</span>
+              )}
             </button>
           </div>
         )}

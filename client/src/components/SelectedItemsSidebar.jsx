@@ -6,11 +6,14 @@ export default function SelectedItemsSidebar({
   onUpdateQuantity,
   onRemoveItem,
   onOrderNow,
+  minOrderValue = 3000,
 }) {
   const totalItems = cart.reduce((s, i) => s + i.quantity, 0);
   const grossMRP = cart.reduce((s, i) => s + (i.mrp || i.price) * i.quantity, 0);
   const netTotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
   const savings = grossMRP - netTotal;
+  const isMinOrderMet = netTotal >= minOrderValue;
+  const shortfall = Math.max(0, minOrderValue - netTotal);
 
   return (
     <aside className="selected-sidebar">
@@ -99,9 +102,29 @@ export default function SelectedItemsSidebar({
             </div>
           </div>
 
-          <button className="btn-order-now" onClick={onOrderNow}>
+          {!isMinOrderMet && (
+            <div style={{
+              background: '#fffbeb',
+              border: '1px solid #fcd34d',
+              borderRadius: '6px',
+              padding: '0.45rem 0.6rem',
+              fontSize: '0.78rem',
+              color: '#92400e',
+              margin: '0.5rem 0 0.25rem',
+              lineHeight: 1.35
+            }}>
+              ⚠️ Min. order value: <strong>₹{minOrderValue.toLocaleString('en-IN')}</strong>. Add <strong>₹{shortfall.toFixed(0)}</strong> more to proceed.
+            </div>
+          )}
+
+          <button
+            className={`btn-order-now ${!isMinOrderMet ? 'btn-order-now--disabled' : ''}`}
+            onClick={isMinOrderMet ? onOrderNow : undefined}
+            disabled={!isMinOrderMet}
+            title={!isMinOrderMet ? `Minimum order value is ₹${minOrderValue.toLocaleString('en-IN')}` : 'Proceed to Checkout'}
+          >
             <ShoppingCart size={16} />
-            Order Now
+            {isMinOrderMet ? 'Order Now' : `Order Now (Min ₹${minOrderValue.toLocaleString('en-IN')})`}
           </button>
         </>
       )}

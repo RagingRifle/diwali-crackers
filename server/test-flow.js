@@ -8,6 +8,23 @@ async function runTest() {
   console.log(`Products count: ${prodData.count}`);
 
   console.log('\n2. Testing Customer Order Submission (Form Submit)...');
+  // 2a. Verify rejection under 3000
+  const underMinRes = await fetch(`${BASE_URL}/api/orders`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      customer_name: 'Aarav Sharma',
+      phone: '9876543210',
+      address: 'Flat 302, Royal Palms',
+      city: 'Chennai',
+      pincode: '600040',
+      items: [{ id: 1, name: '10cm Electric Sparklers', price: 65, quantity: 2 }]
+    })
+  });
+  const underMinData = await underMinRes.json();
+  console.log('Order under 3000 correctly rejected:', underMinRes.status === 400, '| Message:', underMinData.error);
+
+  // 2b. Order >= 3000
   const orderRes = await fetch(`${BASE_URL}/api/orders`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -20,8 +37,8 @@ async function runTest() {
       pincode: '600040',
       notes: 'Please ring bell twice on arrival',
       items: [
-        { id: 1, name: '10cm Electric Sparklers', price: 65, quantity: 2 },
-        { id: 5, name: 'Flower Pots Special (Asoka)', price: 140, quantity: 1 }
+        { id: 1, name: '10cm Electric Sparklers', price: 65, quantity: 20 },
+        { id: 5, name: 'Flower Pots Special (Asoka)', price: 140, quantity: 15 }
       ]
     })
   });

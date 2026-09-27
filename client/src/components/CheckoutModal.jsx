@@ -5,7 +5,8 @@ export default function CheckoutModal({
   isOpen,
   onClose,
   cartItems,
-  onOrderSuccess
+  onOrderSuccess,
+  minOrderValue = 3000
 }) {
   const [formData, setFormData] = useState({
     customer_name: '',
@@ -23,6 +24,7 @@ export default function CheckoutModal({
   if (!isOpen) return null;
 
   const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+  const isMinOrderMet = subtotal >= minOrderValue;
   const isFreeDelivery = subtotal >= 999;
   const deliveryFee = isFreeDelivery ? 0 : 99;
   const finalTotal = subtotal + deliveryFee;
@@ -35,6 +37,11 @@ export default function CheckoutModal({
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    if (subtotal < minOrderValue) {
+      setError(`Minimum order value is ₹${minOrderValue.toLocaleString('en-IN')}. Please add crackers worth ₹${(minOrderValue - subtotal).toLocaleString('en-IN')} more to proceed.`);
+      return;
+    }
 
     // Validation
     if (!formData.customer_name.trim()) {
@@ -265,13 +272,35 @@ export default function CheckoutModal({
               </div>
             </div>
 
+            {!isMinOrderMet && (
+              <div style={{
+                background: '#fffbeb',
+                color: '#92400e',
+                padding: '0.75rem 1rem',
+                borderRadius: 'var(--radius-md)',
+                fontSize: '0.85rem',
+                marginBottom: '1rem',
+                border: '1px solid #fcd34d',
+                fontWeight: 600,
+                textAlign: 'center'
+              }}>
+                ⚠️ Minimum order value is ₹{minOrderValue.toLocaleString('en-IN')}. Please add items worth ₹{(minOrderValue - subtotal).toLocaleString('en-IN')} more to proceed with delivery.
+              </div>
+            )}
+
             <button
               type="submit"
               className="btn-submit-order"
-              disabled={loading}
+              disabled={loading || !isMinOrderMet}
+              style={{
+                opacity: (!isMinOrderMet || loading) ? 0.6 : 1,
+                cursor: (!isMinOrderMet || loading) ? 'not-allowed' : 'pointer'
+              }}
             >
               {loading ? (
                 <span>Submitting Your Festive Order...</span>
+              ) : !isMinOrderMet ? (
+                <span>Minimum Order ₹{minOrderValue.toLocaleString('en-IN')} Required</span>
               ) : (
                 <>
                   <Send size={18} />

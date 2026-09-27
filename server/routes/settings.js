@@ -17,6 +17,9 @@ router.get('/', async (req, res) => {
     if (!settings.top_announcement_bar) {
       settings.top_announcement_bar = 'Sivakasi Fresh Quality Crackers • Diwali 2026 Festive Sale • 🚀 Express Doorstep Dispatch & Real-Time Tracking';
     }
+    if (!settings.minimum_order_value) {
+      settings.minimum_order_value = '3000';
+    }
 
     res.json({ success: true, settings });
   } catch (err) {
@@ -28,13 +31,21 @@ router.get('/', async (req, res) => {
 // PUT /api/settings - Admin protected endpoint to update site settings
 router.put('/', authenticateAdmin, async (req, res) => {
   try {
-    const { top_announcement_bar, settings: bulkSettings } = req.body;
+    const { top_announcement_bar, minimum_order_value, settings: bulkSettings } = req.body;
     const db = await getDb();
 
     if (top_announcement_bar !== undefined) {
       db.run(
         "INSERT INTO settings (key, value, updated_at) VALUES ('top_announcement_bar', ?, datetime('now')) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at",
         [String(top_announcement_bar).trim()]
+      );
+    }
+
+    if (minimum_order_value !== undefined) {
+      const parsedMin = Math.max(0, parseInt(minimum_order_value, 10) || 0);
+      db.run(
+        "INSERT INTO settings (key, value, updated_at) VALUES ('minimum_order_value', ?, datetime('now')) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at",
+        [String(parsedMin)]
       );
     }
 

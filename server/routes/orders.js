@@ -58,6 +58,16 @@ router.post('/', async (req, res) => {
       });
     }
 
+    // Check minimum order value
+    const minSetting = db.get("SELECT value FROM settings WHERE key = 'minimum_order_value'");
+    const minOrderValue = minSetting ? (parseFloat(minSetting.value) || 3000) : 3000;
+    if (totalAmount < minOrderValue) {
+      const remaining = Math.ceil(minOrderValue - totalAmount);
+      return res.status(400).json({
+        error: `Minimum order value is ₹${minOrderValue.toLocaleString('en-IN')}. Please add crackers worth ₹${remaining.toLocaleString('en-IN')} more to place your order.`
+      });
+    }
+
     let orderId = generateOrderId();
     // Ensure uniqueness
     let attempts = 0;
