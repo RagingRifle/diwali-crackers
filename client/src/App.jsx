@@ -8,7 +8,7 @@ import CheckoutModal from './components/CheckoutModal';
 import OrderSuccessModal from './components/OrderSuccessModal';
 import TrackOrderPage from './components/TrackOrderPage';
 import InvoiceModal from './components/InvoiceModal';
-import { Search, ArrowRight } from 'lucide-react';
+import { Phone, Search, ArrowRight } from 'lucide-react';
 import HomePage from './components/HomePage';
 
 export default function App() {
@@ -419,16 +419,16 @@ export default function App() {
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', fontSize: '0.88rem' }}>
               <a href="tel:9384005248" style={{ color: 'var(--primary-red)', fontWeight: 700, textDecoration: 'none' }}>
-                📞 93840 05248
+                <Phone size={20} /> 93840 05248
               </a>
               <a href="tel:7558175156" style={{ color: 'var(--primary-red)', fontWeight: 700, textDecoration: 'none' }}>
-                📞 75581 75156
+                <Phone size={20} /> 75581 75156
               </a>
               <a href="tel:9150431251" style={{ color: 'var(--primary-red)', fontWeight: 700, textDecoration: 'none' }}>
-                📞 91504 31251
+                <Phone size={20} /> 91504 31251
               </a>
               <a href="tel:9626622101" style={{ color: 'var(--primary-red)', fontWeight: 700, textDecoration: 'none' }}>
-                📞 96266 22101
+                <Phone size={20} /> 96266 22101
               </a>
             </div>
             <div style={{ marginTop: '0.75rem' }}>
@@ -446,7 +446,7 @@ export default function App() {
                   textDecoration: 'underline'
                 }}
               >
-                📍 Dispatch Hub: Sivakasi (9.421799, 77.807465)
+                Dispatch Hub: Sivakasi (9.421799, 77.807465)
               </a>
             </div>
           </div>

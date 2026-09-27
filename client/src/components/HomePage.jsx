@@ -60,7 +60,7 @@ const PHONE_NUMBERS = [
   '91504 31251',
   '96266 22101'
 ];
-const MAP_URL = 'https://maps.google.com/?q=9.421799,77.807465';
+const MAP_URL = 'Viswanatham, Sivakasi, Viswanatham, Tamil Nadu 626189';
 
 export default function HomePage({ setCurrentView, onSelectCategory, cart = [], onAddToCart, onUpdateQuantity }) {
   const { days, hours, minutes, seconds } = useCountdown('2026-11-08T00:00:00');
@@ -123,14 +123,14 @@ export default function HomePage({ setCurrentView, onSelectCategory, cart = [], 
         <div className="hp-section__inner">
           {/* Section 1: Featured Combos */}
           <div className="hp-section__header">
-            <h2 className="hp-section__title">⭐ Featured Combos</h2>
+            <h2 className="hp-section__title"> Featured Combos</h2>
             <p className="hp-section__sub">Best value festive hampers direct from Sivakasi (Fixed Price)</p>
           </div>
           <FeaturedCombos onAddToCart={handleAddToCart} />
 
           {/* Section 2: All Products in compact scrollable box */}
           <div className="hp-section__header" style={{ marginTop: '2.5rem' }}>
-            <h2 className="hp-section__title">🎆 All Cracker Products</h2>
+            <h2 className="hp-section__title"> All Cracker Products</h2>
             <p className="hp-section__sub">
               Browse and add to cart directly from this scrollable box without leaving the page
             </p>
@@ -148,7 +148,7 @@ export default function HomePage({ setCurrentView, onSelectCategory, cart = [], 
       <section className="hp-feature-banner">
         <div className="hp-feature-banner__inner">
           <div className="hp-feature-banner__text">
-            <div className="hp-feature-banner__badge">🎆 Special Festive Offer</div>
+            <div className="hp-feature-banner__badge"> Special Festive Offer</div>
             <h2>Authentic Sivakasi Crackers</h2>
             <p>Light up your celebrations with genuine sparklers, flower pots, sky shots &amp; sound crackers. <strong>Up to 85% OFF</strong> factory direct pricing from Dinosaur Crackers!</p>
             <button className="hp-btn hp-btn--primary" onClick={() => goShop()}>
@@ -273,7 +273,7 @@ export default function HomePage({ setCurrentView, onSelectCategory, cart = [], 
                       textDecoration: 'none',
                     }}
                   >
-                    📞 {ph}
+                     {ph}
                   </a>
                 ))}
               </div>
