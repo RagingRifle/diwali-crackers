@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import {
   Sparkles, Shield, Truck, Flame, ArrowRight,
   Star, Package, Zap, Phone, CheckCircle, MapPin
@@ -82,22 +82,13 @@ export default function HomePage({ setCurrentView, onSelectCategory, onAddToCart
       {/* ══════════════════ HERO SECTION ══════════════════ */}
       <section className="hp-hero">
         <img src={heroBg} alt="Diwali 2026 Celebration" className="hp-hero__bg" />
-        <div className="hp-hero__overlay" />
-        <div className="hp-hero__content">
-          <div className="hp-hero__badge"><Sparkles size={15} /><span>Diwali 2026 — Festival of Lights</span></div>
-          <h1 className="hp-hero__title">Light Up Your <br /><span className="hp-hero__title-highlight">Diwali 2026</span><br />with Dinosaur Crackers</h1>
-          <p className="hp-hero__subtitle">Premium quality fireworks delivered safely to your doorstep. Sparklers, rockets, ground chakkars, flower pots &amp; sky shots — direct from Sivakasi.</p>
-          <div className="hp-hero__actions">
-            <button className="hp-btn hp-btn--primary" onClick={() => goShop()}><Flame size={18} />Shop All Crackers<ArrowRight size={16} /></button>
-            <button className="hp-btn hp-btn--secondary" onClick={() => goShop('Sparklers')}><Sparkles size={18} />Explore Sparklers</button>
-          </div>
-          <div className="hp-hero__pills">
-            <span className="hp-pill">✨ 100% Quality Assured</span>
-            <span className="hp-pill">🚚 Safe & Secure Packaging</span>
-            <span className="hp-pill">📦 Min Order ₹3,000</span>
-            <span className="hp-pill">📱 Live Tracking</span>
-          </div>
+        {/* Shop Now — bottom left */}
+        <div className="hp-hero__shopbtn">
+          <button className="hp-btn hp-btn--primary" onClick={() => goShop()}>
+            <Flame size={18} />Shop Now<ArrowRight size={16} />
+          </button>
         </div>
+        {/* Countdown — bottom right */}
         <div className="hp-countdown">
           <div className="hp-countdown__label">🪔 Diwali 2026 Countdown</div>
           <div className="hp-countdown__timer">

@@ -25,8 +25,8 @@ export default function CheckoutModal({
 
   const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   const isMinOrderMet = subtotal >= minOrderValue;
-  const isFreeDelivery = subtotal >= 999;
-  const deliveryFee = isFreeDelivery ? 0 : 99;
+  const isFreeDelivery = true;
+  const deliveryFee = 0;
   const finalTotal = subtotal + deliveryFee;
 
   const handleChange = (e) => {

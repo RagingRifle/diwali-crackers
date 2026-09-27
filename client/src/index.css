@@ -3295,88 +3295,12 @@ table.admin-table tr:hover {
   z-index: 0;
 }
 
-.hp-hero__overlay {
+/* Shop Now button — pinned bottom-left */
+.hp-hero__shopbtn {
   position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    100deg,
-    rgba(10, 5, 0, 0.82) 0%,
-    rgba(80, 15, 0, 0.60) 55%,
-    rgba(0, 0, 0, 0.30) 100%
-  );
-  z-index: 1;
-}
-
-.hp-hero__content {
-  position: relative;
-  z-index: 2;
-  max-width: 1240px;
-  margin: 0 auto;
-  padding: 6rem 2rem 10rem;
-  width: 100%;
-}
-
-.hp-hero__badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: rgba(255, 215, 0, 0.18);
-  border: 1px solid rgba(255, 215, 0, 0.5);
-  color: #FFD700;
-  padding: 0.4rem 1rem;
-  border-radius: 999px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  margin-bottom: 1.5rem;
-  backdrop-filter: blur(6px);
-}
-
-.hp-hero__title {
-  font-size: clamp(2.4rem, 5vw, 4.2rem);
-  font-weight: 900;
-  color: #fff;
-  line-height: 1.15;
-  margin-bottom: 1.25rem;
-  letter-spacing: -1.5px;
-  text-shadow: 0 2px 20px rgba(0,0,0,0.5);
-}
-
-.hp-hero__title-highlight {
-  color: #FFD700;
-  display: inline-block;
-}
-
-.hp-hero__subtitle {
-  font-size: clamp(1rem, 2vw, 1.2rem);
-  color: rgba(255,255,255,0.85);
-  max-width: 560px;
-  line-height: 1.7;
-  margin-bottom: 2rem;
-}
-
-.hp-hero__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.hp-hero__pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.65rem;
-}
-
-.hp-pill {
-  background: rgba(255,255,255,0.12);
-  border: 1px solid rgba(255,255,255,0.25);
-  color: #fff;
-  font-size: 0.82rem;
-  font-weight: 600;
-  padding: 0.35rem 0.9rem;
-  border-radius: 999px;
-  backdrop-filter: blur(4px);
+  bottom: 2.5rem;
+  left: 2rem;
+  z-index: 3;
 }
 
 /* Countdown */
@@ -4078,8 +4002,11 @@ table.admin-table tr:hover {
     min-height: 100svh;
   }
 
-  .hp-hero__content {
-    padding: 5rem 1.25rem 14rem;
+  .hp-hero__shopbtn {
+    bottom: auto;
+    top: auto;
+    left: 1.25rem;
+    bottom: 7rem;
   }
 
   .hp-countdown {

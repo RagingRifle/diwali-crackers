@@ -34,8 +34,8 @@ export default function CartDrawer({
   const minOrderShortfall = Math.max(0, minOrderValue - subtotal);
   const minOrderProgress = Math.min(100, Math.round((subtotal / minOrderValue) * 100));
 
-  const isFreeDelivery = subtotal >= 999;
-  const deliveryFee = subtotal === 0 ? 0 : (isFreeDelivery ? 0 : 99);
+  const isFreeDelivery = true;
+  const deliveryFee = 0;
   const finalTotal = subtotal + deliveryFee;
 
   return (
