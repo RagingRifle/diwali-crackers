@@ -8,7 +8,7 @@ import CheckoutModal from './components/CheckoutModal';
 import OrderSuccessModal from './components/OrderSuccessModal';
 import TrackOrderPage from './components/TrackOrderPage';
 import InvoiceModal from './components/InvoiceModal';
-import { Phone, Search, ArrowRight } from 'lucide-react';
+import { Phone, Search, ArrowRight, MapPin, BadgeCheck, PackageCheck, Smartphone } from 'lucide-react';
 import HomePage from './components/HomePage';
 
 export default function App() {
@@ -438,31 +438,32 @@ export default function App() {
             </div>
             <div style={{ marginTop: '0.75rem' }}>
               <a
-                href="https://maps.google.com/?q=9.421799,77.807465"
+                href="https://maps.google.com/?q=Sri+Velavan+Nagar,+Viswanatham,+Sivakasi,+Tamil+Nadu+626189"
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '0.4rem',
-                  color: '#15803d',
+                  color: 'var(--primary-red)',
                   fontWeight: 700,
                   fontSize: '0.84rem',
                   textDecoration: 'underline'
                 }}
               >
-                Viswanatham, Sivakasi, Viswanatham, Tamil Nadu 626189
+                <MapPin size={16} aria-hidden="true" />
+                Sri Velavan Nagar, Viswanatham, Sivakasi, Tamil Nadu 626189
               </a>
             </div>
           </div>
 
           <div className="footer-col">
             <h4>Safe &amp; Secure</h4>
-            <p>
-              ✅ 100% Quality Assured Crackers<br />
-              ✅ Safe and Secure Packaging<br />
-              ✅ Track anytime via Mobile Number
-            </p>
+            <div style={{ display: 'grid', gap: '0.5rem', fontSize: '0.88rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}><BadgeCheck size={16} color="var(--primary-red)" /> 100% Quality Assured Crackers</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}><PackageCheck size={16} color="var(--primary-red)" /> Safe and Secure Packaging</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}><Smartphone size={16} color="var(--primary-red)" /> Track anytime via Mobile Number</div>
+            </div>
           </div>
         </div>
         <div className="footer-bottom">
