@@ -1783,6 +1783,8 @@ table.admin-table tr:hover {
   .navbar-brand-logo {
     height: 46px;
     max-width: 155px;
+    transform: scale(1.18);
+    transform-origin: left center;
   }
 
   .nav-links {
@@ -1945,10 +1947,18 @@ table.admin-table tr:hover {
     align-items: flex-end;
   }
 
+  .checkout-modal-overlay {
+    top: var(--navbar-height, 96px);
+  }
+
   .modal-content {
     max-height: 94vh;
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     width: 100%;
+  }
+
+  .checkout-modal-overlay .modal-content {
+    max-height: calc(100dvh - var(--navbar-height, 96px) - 0.5rem);
   }
 
   .modal-header {
