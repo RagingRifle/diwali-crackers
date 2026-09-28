@@ -11,9 +11,11 @@ export default function InvoiceModal({ isOpen, onClose, order }) {
     const mrp = Number(item.mrp) || Number(item.price) || 0;
     return sum + (mrp * (Number(item.quantity) || 1));
   }, 0);
+  const itemsTotal = items.reduce((sum, item) => sum + (Number(item.price) || 0) * (Number(item.quantity) || 1), 0);
 
   const netTotal = Number(order.total_amount) || items.reduce((sum, i) => sum + (Number(i.price) * Number(i.quantity)), 0);
-  const totalSavings = grossMRP > netTotal ? grossMRP - netTotal : 0;
+  const totalSavings = grossMRP > itemsTotal ? grossMRP - itemsTotal : 0;
+  const promoDiscount = Number(order.promo_discount) || 0;
   const totalQty = items.reduce((sum, item) => sum + (Number(item.quantity) || 1), 0);
 
   const orderDate = order.created_at
@@ -318,6 +320,11 @@ export default function InvoiceModal({ isOpen, onClose, order }) {
             <td>Factory Savings:</td>
             <td style="text-align:right;">−₹${totalSavings.toFixed(0)}</td>
           </tr>` : ''}
+          ${promoDiscount > 0 ? `
+          <tr class="savings-row">
+            <td>Promo Code${order.promo_code ? ` (${order.promo_code})` : ''}:</td>
+            <td style="text-align:right;">−₹${promoDiscount.toFixed(0)}</td>
+          </tr>` : ''}
           <tr class="total">
             <td>Net Payable:</td>
             <td style="text-align:right;">₹${netTotal.toFixed(0)}</td>
@@ -553,6 +560,12 @@ export default function InvoiceModal({ isOpen, onClose, order }) {
                     <tr style={{ color: '#15803d', fontWeight: 700 }}>
                       <td style={{ padding: '2px 4px' }}>Factory Savings:</td>
                       <td style={{ padding: '2px 4px', textAlign: 'right' }}>−₹{totalSavings.toFixed(0)}</td>
+                    </tr>
+                  )}
+                  {promoDiscount > 0 && (
+                    <tr style={{ color: '#15803d', fontWeight: 700 }}>
+                      <td style={{ padding: '2px 4px' }}>Promo Code{order.promo_code ? ` (${order.promo_code})` : ''}:</td>
+                      <td style={{ padding: '2px 4px', textAlign: 'right' }}>−₹{promoDiscount.toFixed(0)}</td>
                     </tr>
                   )}
                   <tr style={{ borderTop: '1.5px solid #b91c1c', fontWeight: 900, fontSize: '0.95rem', color: '#b91c1c' }}>

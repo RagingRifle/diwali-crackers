@@ -30,6 +30,7 @@ export default function App() {
       return saved ? JSON.parse(saved) : [];
     } catch { return []; }
   });
+  const [appliedPromo, setAppliedPromo] = useState(null);
 
   // Modals
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -98,6 +99,7 @@ export default function App() {
 
   const handleOrderSuccess = (orderSummary) => {
     setCart([]);
+    setAppliedPromo(null);
     setIsCheckoutOpen(false);
     setSuccessOrderData(orderSummary);
   };
@@ -347,6 +349,8 @@ export default function App() {
         onRemoveItem={handleRemoveCartItem}
         onProceedToCheckout={() => setIsCheckoutOpen(true)}
         minOrderValue={minOrderValue}
+        appliedPromo={appliedPromo}
+        setAppliedPromo={setAppliedPromo}
       />
 
       {/* Checkout Modal */}
@@ -356,6 +360,7 @@ export default function App() {
         cartItems={cart}
         onOrderSuccess={handleOrderSuccess}
         minOrderValue={minOrderValue}
+        appliedPromo={appliedPromo}
       />
 
       {/* Order Success Modal */}

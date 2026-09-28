@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Sparkles, Shield, Truck, ArrowRight,
   Star, Package, Zap, Phone, CheckCircle, MapPin
@@ -63,6 +63,50 @@ const PHONE_NUMBERS = [
 ];
 const MAP_URL = 'Viswanatham, Sivakasi, Viswanatham, Tamil Nadu 626189';
 
+function CountUp({ target, suffix = '' }) {
+  const [count, setCount] = useState(0);
+  const numberRef = useRef(null);
+
+  useEffect(() => {
+    const element = numberRef.current;
+    if (!element) return undefined;
+
+    let frameId;
+    let observer;
+    const start = () => {
+      const duration = 1400;
+      const startTime = performance.now();
+      const animate = (now) => {
+        const progress = Math.min((now - startTime) / duration, 1);
+        setCount(Math.floor(target * progress));
+        if (progress < 1) frameId = requestAnimationFrame(animate);
+      };
+      frameId = requestAnimationFrame(animate);
+    };
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setCount(target);
+    } else if ('IntersectionObserver' in window) {
+      observer = new IntersectionObserver(([entry]) => {
+        if (entry.isIntersecting) {
+          observer.disconnect();
+          start();
+        }
+      }, { threshold: 0.5 });
+      observer.observe(element);
+    } else {
+      start();
+    }
+
+    return () => {
+      observer?.disconnect();
+      if (frameId) cancelAnimationFrame(frameId);
+    };
+  }, [target]);
+
+  return <span ref={numberRef}>{count.toLocaleString()}{suffix}</span>;
+}
+
 export default function HomePage({ setCurrentView, onSelectCategory, cart = [], onAddToCart, onUpdateQuantity }) {
   const { days, hours, minutes, seconds } = useCountdown('2026-11-08T00:00:00');
 
@@ -111,12 +155,12 @@ export default function HomePage({ setCurrentView, onSelectCategory, cart = [], 
       {/* ══════════════════ STATS BAR ══════════════════ */}
       <section className="hp-stats">
         {[
-          { val: '2000+', label: 'Happy Customers' },
-          { val: '200+', label: 'Product Varieties' },
-          { val: '5+', label: 'Years of Trust' },
-        ].map(({ val, label }) => (
+          { target: 2000, suffix: '+', label: 'Happy Customers' },
+          { target: 200, suffix: '+', label: 'Product Varieties' },
+          { target: 5, suffix: '+', label: 'Years of Trust' },
+        ].map(({ target, suffix, label }) => (
           <div className="hp-stats__item" key={label}>
-            <span className="hp-stats__val">{val}</span>
+            <span className="hp-stats__val"><CountUp target={target} suffix={suffix} /></span>
             <span className="hp-stats__label">{label}</span>
           </div>
         ))}

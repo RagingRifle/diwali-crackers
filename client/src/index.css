@@ -3998,7 +3998,7 @@ table.admin-table tr:hover {
   .hp-hero {
     display: flex;
     flex-direction: column;
-    background: #110503;
+    background: #fff9e9;
     line-height: normal;
   }
 
@@ -4023,7 +4023,10 @@ table.admin-table tr:hover {
     padding: 0.85rem 1.25rem;
     font-size: 1.05rem;
     border-radius: 12px;
-    box-shadow: 0 4px 16px rgba(211, 47, 47, 0.45);
+    background: #fff;
+    color: #b71c1c;
+    border: 1px solid rgba(183, 28, 28, 0.25);
+    box-shadow: 0 4px 16px rgba(120, 75, 20, 0.12);
   }
 
   .hp-countdown {
@@ -4033,7 +4036,7 @@ table.admin-table tr:hover {
     border-radius: 12px;
     min-width: unset;
     box-sizing: border-box;
-    background: rgba(255, 250, 235, 0.96);
+    background: #fff;
     border: 1px solid rgba(184, 134, 11, 0.38);
   }
 
@@ -4079,4 +4082,3 @@ table.admin-table tr:hover {
     grid-template-columns: 1fr;
   }
 }
-

@@ -6,7 +6,8 @@ export default function CheckoutModal({
   onClose,
   cartItems,
   onOrderSuccess,
-  minOrderValue = 3000
+  minOrderValue = 3000,
+  appliedPromo
 }) {
   const [formData, setFormData] = useState({
     customer_name: '',
@@ -25,7 +26,8 @@ export default function CheckoutModal({
 
   const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   const isMinOrderMet = subtotal >= minOrderValue;
-  const finalTotal = subtotal;
+  const promoDiscount = appliedPromo?.discount || 0;
+  const finalTotal = Math.max(0, subtotal - promoDiscount);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -67,6 +69,7 @@ export default function CheckoutModal({
       setLoading(true);
       const payload = {
         ...formData,
+        promo_code: appliedPromo?.code || '',
         items: cartItems.map(item => ({
           id: item.id,
           code: item.code || '',
@@ -103,6 +106,8 @@ export default function CheckoutModal({
         pincode: formData.pincode,
         notes: formData.notes,
         total_amount: data.totalAmount,
+        promo_code: appliedPromo?.code || '',
+        promo_discount: promoDiscount,
         totalAmount: data.totalAmount,
         items: payload.items,
         created_at: new Date().toISOString()
@@ -268,6 +273,7 @@ export default function CheckoutModal({
               <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                 {cartItems.map(i => `${i.name} (x${i.quantity})`).join(', ')}
               </div>
+              {appliedPromo && <div style={{ marginTop: 6, fontSize: '0.82rem', color: '#047857', fontWeight: 700 }}>Promo {appliedPromo.code}: − ₹{promoDiscount.toLocaleString('en-IN')}</div>}
             </div>
 
             {!isMinOrderMet && (

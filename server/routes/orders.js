@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { getDb } = require('../db');
 const { authenticateAdmin } = require('../middleware/auth');
+const { evaluatePromo } = require('../utils/promocodes');
 
 // Helper to generate readable Order ID: e.g. CRK-2026-7842
 function generateOrderId() {
@@ -21,7 +22,8 @@ router.post('/', async (req, res) => {
       city,
       pincode,
       notes,
-      items
+      items,
+      promo_code
     } = req.body;
 
     // Validation
@@ -58,7 +60,19 @@ router.post('/', async (req, res) => {
       });
     }
 
-    // Check minimum order value
+    let promoDiscount = 0;
+    let appliedPromoCode = '';
+    if (promo_code) {
+      const promo = db.get('SELECT * FROM promo_codes WHERE code = ? AND active = 1', [String(promo_code).trim().toUpperCase()]);
+      const evaluation = promo && evaluatePromo(promo, totalAmount);
+      if (!evaluation) {
+        return res.status(400).json({ error: 'This promo code is no longer valid for the current cart total.' });
+      }
+      promoDiscount = evaluation.discount;
+      appliedPromoCode = promo.code;
+    }
+
+    // Check minimum order value against the pre-discount cart subtotal.
     const minSetting = db.get("SELECT value FROM settings WHERE key = 'minimum_order_value'");
     const minOrderValue = minSetting ? (parseFloat(minSetting.value) || 3000) : 3000;
     if (totalAmount < minOrderValue) {
@@ -91,9 +105,9 @@ router.post('/', async (req, res) => {
     db.run(`
       INSERT INTO orders (
         id, customer_name, phone, email, address, city, pincode,
-        notes, total_amount, status, courier_name, tracking_number,
+        notes, total_amount, promo_code, promo_discount, status, courier_name, tracking_number,
         status_updates, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', '', '', ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', '', '', ?, ?)
     `, [
       orderId,
       customer_name.trim(),
@@ -103,7 +117,9 @@ router.post('/', async (req, res) => {
       city.trim(),
       pincode.trim(),
       notes ? notes.trim() : '',
-      totalAmount,
+      Math.max(0, totalAmount - promoDiscount),
+      appliedPromoCode,
+      promoDiscount,
       initialStatusUpdates,
       now
     ]);
@@ -126,6 +142,10 @@ router.post('/', async (req, res) => {
       ]);
     }
 
+    if (appliedPromoCode) {
+      db.run('UPDATE promo_codes SET redemption_count = redemption_count + 1, updated_at = datetime(\'now\') WHERE code = ?', [appliedPromoCode]);
+    }
+
     db.save();
 
     const fullOrder = {
@@ -137,7 +157,9 @@ router.post('/', async (req, res) => {
       city: city.trim(),
       pincode: pincode.trim(),
       notes: notes ? notes.trim() : '',
-      total_amount: totalAmount,
+      total_amount: Math.max(0, totalAmount - promoDiscount),
+      promo_code: appliedPromoCode,
+      promo_discount: promoDiscount,
       status: 'Pending',
       courier_name: '',
       tracking_number: '',
@@ -156,7 +178,7 @@ router.post('/', async (req, res) => {
       success: true,
       message: 'Order placed successfully!',
       orderId,
-      totalAmount,
+      totalAmount: Math.max(0, totalAmount - promoDiscount),
       customerName: customer_name,
       order: fullOrder
     });

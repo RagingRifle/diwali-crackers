@@ -8,9 +8,14 @@ export default function CartDrawer({
   onUpdateQuantity,
   onRemoveItem,
   onProceedToCheckout,
-  minOrderValue = 3000
+  minOrderValue = 3000,
+  appliedPromo,
+  setAppliedPromo
 }) {
   const [checkoutError, setCheckoutError] = useState('');
+  const [promoInput, setPromoInput] = useState('');
+  const [promoMessage, setPromoMessage] = useState('');
+  const [promoLoading, setPromoLoading] = useState(false);
 
   // Reset checkout error when drawer opens or cart changes
   useEffect(() => {
@@ -29,9 +34,8 @@ export default function CartDrawer({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
-
   const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+  const promoDiscount = appliedPromo?.discount || 0;
   const totalSavings = cartItems.reduce((acc, item) => {
     const savingPerItem = (item.mrp && item.mrp > item.price) ? (item.mrp - item.price) : 0;
     return acc + (savingPerItem * item.quantity);
@@ -39,7 +43,58 @@ export default function CartDrawer({
 
   const isMinOrderMet = subtotal >= minOrderValue;
   const minOrderShortfall = Math.max(0, minOrderValue - subtotal);
-  const finalTotal = subtotal;
+  const finalTotal = Math.max(0, subtotal - promoDiscount);
+
+  useEffect(() => {
+    if (!appliedPromo?.code) return;
+    let cancelled = false;
+    fetch('/api/promocodes/validate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: appliedPromo.code, cartTotal: subtotal }),
+    }).then(res => res.json()).then(data => {
+      if (cancelled) return;
+      if (!data.success) {
+        setAppliedPromo(null);
+        setPromoMessage(data.error || 'Promo code no longer applies to this cart total.');
+      } else {
+        setAppliedPromo(current => current?.code === data.code && current.discount === data.discount ? current : { code: data.code, discount: data.discount });
+      }
+    }).catch(() => {
+      if (!cancelled) setPromoMessage('Could not refresh the promo discount.');
+    });
+    return () => { cancelled = true; };
+  }, [subtotal, appliedPromo?.code, setAppliedPromo]);
+
+  const handleApplyPromo = async () => {
+    const code = promoInput.trim().toUpperCase();
+    if (!code) {
+      setPromoMessage('Enter a promo code first.');
+      return;
+    }
+    setPromoLoading(true);
+    setPromoMessage('');
+    try {
+      const response = await fetch('/api/promocodes/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, cartTotal: subtotal }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) throw new Error(data.error || 'Promo code could not be applied.');
+      setAppliedPromo({ code: data.code, discount: data.discount });
+      setPromoInput(data.code);
+      setPromoMessage(`Promo applied! You save ₹${data.discount.toLocaleString('en-IN')}.`);
+      setCheckoutError('');
+    } catch (err) {
+      setAppliedPromo(null);
+      setPromoMessage(err.message || 'Promo code could not be applied.');
+    } finally {
+      setPromoLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
 
   return (
     <div
@@ -86,7 +141,7 @@ export default function CartDrawer({
             cartItems.map((item) => (
               <div key={item.id} className="cart-item-row">
                 <img
-                  src={item.image}
+                  src={item.code ? `/products/${item.code}.jpg` : item.image}
                   alt={item.name}
                   className="cart-item-img"
                   onError={(e) => {
@@ -155,6 +210,12 @@ export default function CartDrawer({
                   <span>- ₹{totalSavings}</span>
                 </div>
               )}
+              {appliedPromo && (
+                <div className="breakdown-row" style={{ color: '#047857' }}>
+                  <span>Promo code ({appliedPromo.code})</span>
+                  <span>- ₹{promoDiscount.toLocaleString('en-IN')}</span>
+                </div>
+              )}
               <div className="breakdown-row total">
                 <span>Estimated Total</span>
                 <span className="amount">₹{finalTotal}</span>
@@ -174,6 +235,19 @@ export default function CartDrawer({
                   Min. order value: ₹{minOrderValue.toLocaleString('en-IN')} (₹{minOrderShortfall.toLocaleString('en-IN')} remaining to fulfill it)
                 </div>
               )}
+            </div>
+
+            <div style={{ margin: '0.75rem 0' }}>
+              <label htmlFor="cart-promo-code" style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: 5 }}>Promo code</label>
+              <div style={{ display: 'flex', gap: 7 }}>
+                <input id="cart-promo-code" value={promoInput} onChange={e => {
+                  const value = e.target.value.toUpperCase();
+                  setPromoInput(value);
+                  if (appliedPromo && value.trim() !== appliedPromo.code) setAppliedPromo(null);
+                }} placeholder="Enter code" style={{ minWidth: 0, flex: 1, padding: '0.6rem 0.7rem', border: '1px solid #d1d5db', borderRadius: 7 }} />
+                <button type="button" className="btn-action" onClick={handleApplyPromo} disabled={promoLoading}>{promoLoading ? 'Checking…' : appliedPromo ? 'Apply another' : 'Apply'}</button>
+              </div>
+              {promoMessage && <div role="status" style={{ marginTop: 5, fontSize: '0.78rem', color: appliedPromo ? '#047857' : '#991b1b' }}>{promoMessage}</div>}
             </div>
 
             {checkoutError && !isMinOrderMet && (

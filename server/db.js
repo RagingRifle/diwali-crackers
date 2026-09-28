@@ -128,6 +128,18 @@ function initTables(db) {
       value TEXT NOT NULL,
       updated_at TEXT DEFAULT (datetime('now'))
     );
+
+    CREATE TABLE IF NOT EXISTS promo_codes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      code TEXT NOT NULL UNIQUE,
+      discount_type TEXT NOT NULL DEFAULT 'amount',
+      discount_value REAL NOT NULL DEFAULT 0,
+      tiers TEXT NOT NULL DEFAULT '[]',
+      active INTEGER NOT NULL DEFAULT 1,
+      redemption_count INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now'))
+    );
   `);
   db.save();
 
@@ -156,6 +168,10 @@ function initTables(db) {
 
   // Migrations for existing databases
   try {
+    const orderCols = db.all("PRAGMA table_info(orders)").map(c => c.name);
+    if (!orderCols.includes('promo_code')) db.rawDb.run("ALTER TABLE orders ADD COLUMN promo_code TEXT DEFAULT ''");
+    if (!orderCols.includes('promo_discount')) db.rawDb.run("ALTER TABLE orders ADD COLUMN promo_discount REAL DEFAULT 0");
+
     const productCols = db.all("PRAGMA table_info(products)").map(c => c.name);
     if (!productCols.includes('is_combo')) {
       db.rawDb.run("ALTER TABLE products ADD COLUMN is_combo INTEGER DEFAULT 0");

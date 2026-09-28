@@ -6,6 +6,7 @@ import {
   Percent, Layers, Minus
 } from 'lucide-react';
 import InvoiceModal from '../InvoiceModal';
+import PromoCodesPanel from './PromoCodesPanel';
 
 const ORDER_STATUS_OPTIONS = [
   'Pending',
@@ -701,6 +702,15 @@ export default function AdminDashboard({ adminUser, onLogout, onProductChange })
           >
             <Layers size={16} />
             <span>Manage Combos 🎁 ({comboProducts.length})</span>
+          </button>
+
+          <button
+            className={`btn-admin-nav ${activeTab === 'promocodes' ? 'active' : ''}`}
+            onClick={() => setActiveTab('promocodes')}
+            style={{ background: activeTab === 'promocodes' ? 'var(--primary-red)' : '#fef3c7', color: activeTab === 'promocodes' ? '#fff' : '#92400e' }}
+          >
+            <Percent size={16} />
+            <span>Promo Codes</span>
           </button>
 
           <button className="btn-admin-logout" onClick={onLogout}>
@@ -2137,6 +2147,8 @@ export default function AdminDashboard({ adminUser, onLogout, onProductChange })
           </div>
         </div>
       )}
+
+      {activeTab === 'promocodes' && <PromoCodesPanel />}
 
       {/* Standalone Printable & Downloadable Invoice Modal */}
       {invoiceOrder && (
