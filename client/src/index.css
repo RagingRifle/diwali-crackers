@@ -151,9 +151,9 @@ body {
 }
 
 .navbar-brand-logo {
-  height: clamp(56px, 7.5vw, 80px);
+  height: clamp(76px, 9.5vw, 120px);
   width: auto;
-  max-width: clamp(180px, 28vw, 280px);
+  max-width: clamp(220px, 32vw, 340px);
   object-fit: contain;
   display: block;
   transition: transform 0.2s ease;
@@ -3306,9 +3306,9 @@ table.admin-table tr:hover {
   bottom: 2.5rem;
   right: 2rem;
   z-index: 3;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(255, 250, 235, 0.96);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255,215,0,0.35);
+  border: 1px solid rgba(184, 134, 11, 0.38);
   border-radius: 16px;
   padding: 1rem 1.5rem;
   text-align: center;
@@ -3316,7 +3316,7 @@ table.admin-table tr:hover {
 }
 
 .hp-countdown__label {
-  color: #FFD700;
+  color: #805500;
   font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 0.5px;
@@ -3335,7 +3335,7 @@ table.admin-table tr:hover {
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  background: rgba(255,215,0,0.12);
+  background: rgba(245, 233, 201, 0.9);
   border-radius: 10px;
   padding: 0.5rem 0.75rem;
   min-width: 52px;
@@ -3344,7 +3344,7 @@ table.admin-table tr:hover {
 .hp-countdown__num {
   font-size: 1.8rem;
   font-weight: 900;
-  color: #FFD700;
+  color: #8A5A00;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
@@ -3352,7 +3352,7 @@ table.admin-table tr:hover {
 .hp-countdown__lbl {
   font-size: 0.68rem;
   font-weight: 700;
-  color: rgba(255,255,255,0.65);
+  color: #66512E;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -4033,8 +4033,8 @@ table.admin-table tr:hover {
     border-radius: 12px;
     min-width: unset;
     box-sizing: border-box;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 215, 0, 0.35);
+    background: rgba(255, 250, 235, 0.96);
+    border: 1px solid rgba(184, 134, 11, 0.38);
   }
 
   .hp-countdown__label {
@@ -4079,5 +4079,4 @@ table.admin-table tr:hover {
     grid-template-columns: 1fr;
   }
 }
-
 

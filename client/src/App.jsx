@@ -401,13 +401,13 @@ export default function App() {
                 style={{ cursor: 'pointer', color: 'var(--text-main)' }}
                 onClick={() => { setCurrentView('shop'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
               >
-                🎆 Products Catalog
+                 Products Catalog
               </span>
               <span
                 style={{ cursor: 'pointer', color: 'var(--text-main)' }}
                 onClick={() => { setCurrentView('track'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
               >
-                🚚 Live Order Tracking
+                 Live Order Tracking
               </span>
             </div>
           </div>
