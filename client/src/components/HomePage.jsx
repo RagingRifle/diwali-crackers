@@ -7,6 +7,7 @@ import heroBg from '../assets/diwali_hero.png';
 import ProductGrid from './ProductGrid';
 import FeaturedCombos from './FeaturedCombos';
 import TestimonialsCarousel from './TestimonialsCarousel';
+import heroMobile from '../assets/hero_mobile.jpeg';
 
 /* ─── Countdown to Diwali 2026 (Nov 8, 2026) ────────────────────────────── */
 function useCountdown(targetDate) {
@@ -82,7 +83,10 @@ export default function HomePage({ setCurrentView, onSelectCategory, cart = [], 
 
       {/* ══════════════════ HERO SECTION ══════════════════ */}
       <section className="hp-hero">
-        <img src={heroBg} alt="Diwali 2026 Celebration" className="hp-hero__bg" />
+        <picture>
+  <source media="(max-width: 768px)" srcSet={heroMobile} />
+  <img src={heroBg} alt="Diwali 2026 Celebration" className="hp-hero__bg" />
+</picture>
         {/* Shop Now — bottom left */}
         <div className="hp-hero__shopbtn">
           <button className="hp-btn hp-btn--primary" onClick={() => goShop()}>
