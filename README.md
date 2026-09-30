@@ -79,6 +79,21 @@ cd client
 npm run dev
 ```
 
+### Order email notifications
+
+Every successful checkout sends the complete order and delivery details, item breakdown, total, and generated order tracking ID to `dinosaurcrackersofficial@gmail.com`. Set SMTP credentials on the backend host in `server/.env` (never in the client):
+
+```env
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=465
+SMTP_SECURE=true
+SMTP_USER=your-sending-address@gmail.com
+SMTP_PASS=your-16-character-google-app-password
+SMTP_FROM=your-sending-address@gmail.com
+```
+
+For Gmail, enable 2-Step Verification and create an App Password; use that password as `SMTP_PASS`, not your normal Google password. Restart the backend after setting these values. Without SMTP configuration the order is still saved, but no email can be sent. The checkout email contains the app's order tracking ID; the carrier AWB becomes available only after a courier is assigned in the admin panel.
+
 ### Admin Credentials:
 - **Username**: `admin`
 - **Password**: `diwali@2026`

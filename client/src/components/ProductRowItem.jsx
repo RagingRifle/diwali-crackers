@@ -25,9 +25,7 @@ export default function ProductRowItem({ product, cartItem, onAddToCart, onUpdat
   }
 
   // Resolve image
-  const imgSrc = product.code
-    ? `/products/${product.code}.jpg`
-    : (product.image || '');
+  const imgSrc = product.image || (product.code ? `/products/${product.code}.jpg` : '');
 
   return (
     <>

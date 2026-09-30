@@ -141,7 +141,7 @@ export default function CartDrawer({
             cartItems.map((item) => (
               <div key={item.id} className="cart-item-row">
                 <img
-                  src={item.code ? `/products/${item.code}.jpg` : item.image}
+                  src={item.image || (item.code ? `/products/${item.code}.jpg` : '')}
                   alt={item.name}
                   className="cart-item-img"
                   onError={(e) => {

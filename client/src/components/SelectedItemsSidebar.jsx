@@ -48,9 +48,7 @@ export default function SelectedItemsSidebar({
                 <div className="selected-sidebar__item-img">
                   <img
                     src={
-                      item.code
-                        ? `/products/${item.code}.jpg`
-                        : ''
+                      item.image || (item.code ? `/products/${item.code}.jpg` : '')
                     }
                     alt={item.name}
                     onError={(e) => {

@@ -1131,7 +1131,7 @@ export default function AdminDashboard({ adminUser, onLogout, onProductChange })
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                           <img
-                            src={prod.code ? `/products/${prod.code}.jpg` : prod.image}
+                            src={prod.image || (prod.code ? `/products/${prod.code}.jpg` : '')}
                             alt={prod.name}
                             style={{ width: '40px', height: '40px', borderRadius: 'var(--radius-sm)', objectFit: 'cover' }}
                             onError={(e) => {

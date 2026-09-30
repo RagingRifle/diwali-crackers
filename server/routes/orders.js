@@ -3,6 +3,7 @@ const router = express.Router();
 const { getDb } = require('../db');
 const { authenticateAdmin } = require('../middleware/auth');
 const { evaluatePromo } = require('../utils/promocodes');
+const { sendOrderEmail } = require('../utils/orderEmail');
 
 // Helper to generate readable Order ID: e.g. CRK-2026-7842
 function generateOrderId() {
@@ -173,6 +174,13 @@ router.post('/', async (req, res) => {
         }
       ]
     };
+
+    // Email happens after the order is saved; SMTP outages must not lose a valid order.
+    try {
+      await sendOrderEmail(fullOrder);
+    } catch (emailErr) {
+      console.error(`Failed to email order ${orderId}:`, emailErr.message);
+    }
 
     res.status(201).json({
       success: true,
