@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 const { getDb } = require('./db');
 
 const app = express();
@@ -13,7 +14,7 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
-app.use(express.json());
+app.use(express.json({ limit: '12mb' }));
 
 // Request logger
 app.use((req, res, next) => {
@@ -24,6 +25,7 @@ app.use((req, res, next) => {
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/products', require('./routes/products'));
+app.use('/api/uploads', require('./routes/uploads'));
 app.use('/api/orders', require('./routes/orders'));
 app.use('/api/stats', require('./routes/stats'));
 app.use('/api/settings', require('./routes/settings'));
@@ -31,6 +33,9 @@ app.use('/api/promocodes', require('./routes/promocodes'));
 
 // Static files (built client)
 const clientDist = path.join(__dirname, '../client/dist');
+const uploadsDir = path.resolve(process.env.IMAGE_UPLOAD_DIR || path.join(__dirname, 'uploads'));
+fs.mkdirSync(uploadsDir, { recursive: true });
+app.use('/uploads', express.static(uploadsDir, { fallthrough: false, maxAge: '1d' }));
 app.use(express.static(clientDist));
 
 // Health check

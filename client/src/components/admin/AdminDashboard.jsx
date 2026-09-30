@@ -34,6 +34,74 @@ const CATEGORIES = [
   'Miscellaneous'
 ];
 
+function AdminImageInput({ value, onChange }) {
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+
+  const handleFile = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      setUploadError('Choose a JPEG, PNG, or WebP image.');
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      setUploadError('Image must be smaller than 8 MB.');
+      return;
+    }
+
+    setUploading(true);
+    setUploadError('');
+    try {
+      const image = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error('Could not read that image.'));
+        reader.readAsDataURL(file);
+      });
+      const token = localStorage.getItem('diwali_admin_token');
+      const response = await fetch('/api/uploads/image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ image }),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.error || 'Upload failed.');
+      onChange(result.url);
+    } catch (error) {
+      setUploadError(error.message || 'Upload failed.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="form-group" style={{ marginTop: '0.75rem' }}>
+      <label>Image</label>
+      <input
+        type="text"
+        className="form-control"
+        placeholder="Paste an image URL, or choose a file below"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      />
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginTop: '0.55rem', flexWrap: 'wrap' }}>
+        <label className="btn-action" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', cursor: uploading ? 'wait' : 'pointer' }}>
+          <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleFile} disabled={uploading} style={{ display: 'none' }} />
+          <span>{uploading ? 'Uploading…' : 'Choose image to upload'}</span>
+        </label>
+        <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>JPEG, PNG, or WebP; up to 8 MB</span>
+      </div>
+      {uploadError && <p role="alert" style={{ color: '#b91c1c', fontSize: '0.8rem', margin: '0.4rem 0 0' }}>{uploadError}</p>}
+      {value && <img src={value} alt="Selected product" style={{ width: 76, height: 76, objectFit: 'cover', borderRadius: 8, marginTop: 8 }} />}
+    </div>
+  );
+}
+
 export default function AdminDashboard({ adminUser, onLogout, onProductChange }) {
   const [activeTab, setActiveTab] = useState('orders'); // 'orders', 'products', 'combos'
   const [stats, setStats] = useState(null);
@@ -1451,16 +1519,7 @@ export default function AdminDashboard({ adminUser, onLogout, onProductChange })
                   />
                 </div>
 
-                <div className="form-group" style={{ marginTop: '0.75rem' }}>
-                  <label>Image URL</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="e.g. /combos/family-hamper.jpg"
-                    value={simpleComboForm.image}
-                    onChange={(e) => setSimpleComboForm(prev => ({ ...prev, image: e.target.value }))}
-                  />
-                </div>
+                <AdminImageInput value={simpleComboForm.image} onChange={(image) => setSimpleComboForm(prev => ({ ...prev, image }))} />
 
                 <div className="form-group" style={{ marginTop: '0.75rem' }}>
                   <label>Fixed Price (₹) <span className="required">*</span></label>
@@ -1564,6 +1623,8 @@ export default function AdminDashboard({ adminUser, onLogout, onProductChange })
                     onChange={(e) => setComboForm(prev => ({ ...prev, content: e.target.value }))}
                   />
                 </div>
+
+                <AdminImageInput value={comboForm.image} onChange={(image) => setComboForm(prev => ({ ...prev, image }))} />
 
                 {/* Cracker Selector / Ingredient Adder */}
                 <div style={{ marginTop: '1rem', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '1rem' }}>
@@ -2104,16 +2165,7 @@ export default function AdminDashboard({ adminUser, onLogout, onProductChange })
                   )}
                 </div>
 
-                <div className="form-group" style={{ marginTop: '0.75rem' }}>
-                  <label>Image URL</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="e.g. /products/5.jpg or URL"
-                    value={productForm.image}
-                    onChange={(e) => setProductForm(prev => ({ ...prev, image: e.target.value }))}
-                  />
-                </div>
+                <AdminImageInput value={productForm.image} onChange={(image) => setProductForm(prev => ({ ...prev, image }))} />
 
                 <div className="form-group" style={{ marginTop: '0.75rem' }}>
                   <label>Description</label>

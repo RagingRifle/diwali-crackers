@@ -9,6 +9,7 @@ client/dist/
 # Environment and local databases
 .env
 *.local
+/server/uploads/
 
 # Logs
 npm-debug.log*
