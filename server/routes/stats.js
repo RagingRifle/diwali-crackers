@@ -9,27 +9,27 @@ router.get('/', authenticateAdmin, async (req, res) => {
     const db = await getDb();
 
     // Total orders
-    const totalOrdersRes = db.get("SELECT COUNT(*) as count FROM orders");
+    const totalOrdersRes = db.get("SELECT COUNT(*) as count FROM orders WHERE COALESCE(is_archived, 0) = 0");
     const totalOrders = totalOrdersRes ? totalOrdersRes.count : 0;
 
     // Total revenue
-    const revenueRes = db.get("SELECT SUM(total_amount) as total FROM orders WHERE status != 'Cancelled'");
+    const revenueRes = db.get("SELECT SUM(total_amount) as total FROM orders WHERE status != 'Cancelled' AND COALESCE(is_archived, 0) = 0");
     const totalRevenue = revenueRes && revenueRes.total ? revenueRes.total : 0;
 
     // Status breakdown
-    const pendingRes = db.get("SELECT COUNT(*) as count FROM orders WHERE status = 'Pending'");
-    const confirmedRes = db.get("SELECT COUNT(*) as count FROM orders WHERE status = 'Confirmed'");
-    const packedRes = db.get("SELECT COUNT(*) as count FROM orders WHERE status = 'Packed'");
-    const outForDeliveryRes = db.get("SELECT COUNT(*) as count FROM orders WHERE status = 'Out for Delivery'");
-    const deliveredRes = db.get("SELECT COUNT(*) as count FROM orders WHERE status = 'Delivered'");
-    const cancelledRes = db.get("SELECT COUNT(*) as count FROM orders WHERE status = 'Cancelled'");
+    const pendingRes = db.get("SELECT COUNT(*) as count FROM orders WHERE status = 'Pending' AND COALESCE(is_archived, 0) = 0");
+    const confirmedRes = db.get("SELECT COUNT(*) as count FROM orders WHERE status = 'Confirmed' AND COALESCE(is_archived, 0) = 0");
+    const packedRes = db.get("SELECT COUNT(*) as count FROM orders WHERE status = 'Packed' AND COALESCE(is_archived, 0) = 0");
+    const outForDeliveryRes = db.get("SELECT COUNT(*) as count FROM orders WHERE status = 'Out for Delivery' AND COALESCE(is_archived, 0) = 0");
+    const deliveredRes = db.get("SELECT COUNT(*) as count FROM orders WHERE status = 'Delivered' AND COALESCE(is_archived, 0) = 0");
+    const cancelledRes = db.get("SELECT COUNT(*) as count FROM orders WHERE status = 'Cancelled' AND COALESCE(is_archived, 0) = 0");
 
     // Total products
     const totalProductsRes = db.get("SELECT COUNT(*) as count FROM products");
     const inStockRes = db.get("SELECT COUNT(*) as count FROM products WHERE in_stock = 1");
 
     // Recent 5 orders
-    const recentOrders = db.all("SELECT id, customer_name, phone, city, total_amount, status, created_at FROM orders ORDER BY created_at DESC LIMIT 5");
+    const recentOrders = db.all("SELECT id, customer_name, phone, city, total_amount, status, created_at FROM orders WHERE COALESCE(is_archived, 0) = 0 ORDER BY created_at DESC LIMIT 5");
 
     res.json({
       success: true,

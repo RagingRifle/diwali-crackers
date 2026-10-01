@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import InvoiceModal from '../InvoiceModal';
 import PromoCodesPanel from './PromoCodesPanel';
+import AdminAnalytics from './AdminAnalytics';
 
 const ORDER_STATUS_OPTIONS = [
   'Pending',
@@ -103,11 +104,14 @@ function AdminImageInput({ value, onChange }) {
 }
 
 export default function AdminDashboard({ adminUser, onLogout, onProductChange }) {
-  const [activeTab, setActiveTab] = useState('orders'); // 'orders', 'products', 'combos'
+  const [activeTab, setActiveTab] = useState('analytics'); // 'analytics', 'orders', 'products', 'combos'
   const [stats, setStats] = useState(null);
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [analyticsOrders, setAnalyticsOrders] = useState([]);
+  const [analyticsProducts, setAnalyticsProducts] = useState([]);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
 
   // Filters
   const [orderStatusFilter, setOrderStatusFilter] = useState('All');
@@ -119,6 +123,12 @@ export default function AdminDashboard({ adminUser, onLogout, onProductChange })
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [trackingModalOrder, setTrackingModalOrder] = useState(null);
   const [invoiceOrder, setInvoiceOrder] = useState(null);
+  const [archiveTarget, setArchiveTarget] = useState(null);
+  const [archiveConfirmation, setArchiveConfirmation] = useState('');
+  const [archiveSaving, setArchiveSaving] = useState(false);
+  const [showArchive, setShowArchive] = useState(false);
+  const [archivedOrders, setArchivedOrders] = useState([]);
+  const [archiveLoading, setArchiveLoading] = useState(false);
   const [productModal, setProductModal] = useState({ open: false, isEdit: false, data: null });
   const [comboModal, setComboModal] = useState({ open: false, isEdit: false, data: null });
   const [discountModal, setDiscountModal] = useState({ open: false, product: null, discount_percent: 0, price: 0 });
@@ -229,6 +239,74 @@ export default function AdminDashboard({ adminUser, onLogout, onProductChange })
     }
   };
 
+  const fetchArchivedOrders = async () => {
+    setArchiveLoading(true);
+    try {
+      const res = await fetch('/api/orders?status=All&archived=true', { headers: getAuthHeader() });
+      if (res.status === 401 || res.status === 403) {
+        onLogout();
+        return;
+      }
+      const data = await res.json();
+      if (data.success) setArchivedOrders(data.orders || []);
+      else alert(data.error || 'Could not load archived orders.');
+    } catch (error) {
+      alert('Could not load archived orders.');
+    } finally {
+      setArchiveLoading(false);
+    }
+  };
+
+  const handleArchiveOrder = async (event) => {
+    event.preventDefault();
+    if (!archiveTarget || archiveConfirmation.trim() !== archiveTarget.id) return;
+
+    try {
+      setArchiveSaving(true);
+      const res = await fetch(`/api/orders/${encodeURIComponent(archiveTarget.id)}`, {
+        method: 'DELETE',
+        headers: getAuthHeader(),
+        body: JSON.stringify({ confirmation: archiveConfirmation.trim() })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        alert(data.error || 'Could not archive this order.');
+        return;
+      }
+      setArchiveTarget(null);
+      setArchiveConfirmation('');
+      fetchOrders();
+      fetchStats();
+      fetchAnalyticsData();
+      if (showArchive) fetchArchivedOrders();
+    } catch (error) {
+      alert('Could not archive this order.');
+    } finally {
+      setArchiveSaving(false);
+    }
+  };
+
+  const handleRestoreOrder = async (order) => {
+    if (!window.confirm(`Restore order ${order.id} to active orders and dashboard metrics?`)) return;
+    try {
+      const res = await fetch(`/api/orders/${encodeURIComponent(order.id)}/restore`, {
+        method: 'POST',
+        headers: getAuthHeader()
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        alert(data.error || 'Could not restore this order.');
+        return;
+      }
+      fetchArchivedOrders();
+      fetchOrders();
+      fetchStats();
+      fetchAnalyticsData();
+    } catch (error) {
+      alert('Could not restore this order.');
+    }
+  };
+
   // Fetch Products
   const fetchProducts = async () => {
     try {
@@ -249,6 +327,27 @@ export default function AdminDashboard({ adminUser, onLogout, onProductChange })
       }
     } catch (e) {
       console.error('Products error', e);
+    }
+  };
+
+  const fetchAnalyticsData = async () => {
+    setAnalyticsLoading(true);
+    try {
+      const [ordersRes, productsRes] = await Promise.all([
+        fetch('/api/orders?status=All', { headers: getAuthHeader() }),
+        fetch('/api/products')
+      ]);
+      if (ordersRes.status === 401 || ordersRes.status === 403) {
+        onLogout();
+        return;
+      }
+      const [ordersData, productsData] = await Promise.all([ordersRes.json(), productsRes.json()]);
+      if (ordersData.success) setAnalyticsOrders(ordersData.orders || []);
+      if (productsData.success) setAnalyticsProducts(productsData.products || []);
+    } catch (error) {
+      console.error('Analytics data error', error);
+    } finally {
+      setAnalyticsLoading(false);
     }
   };
 
@@ -320,6 +419,10 @@ export default function AdminDashboard({ adminUser, onLogout, onProductChange })
     fetchProducts();
     fetchSettings();
   }, [orderStatusFilter, orderSearch, productSearch, productCategoryFilter]);
+
+  useEffect(() => {
+    fetchAnalyticsData();
+  }, []);
 
   // Update Status Quick
   const handleQuickStatusChange = async (orderId, newStatus) => {
@@ -748,6 +851,17 @@ export default function AdminDashboard({ adminUser, onLogout, onProductChange })
 
         <div className="admin-actions">
           <button
+            className={`btn-admin-nav ${activeTab === 'analytics' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveTab('analytics');
+              fetchAnalyticsData();
+            }}
+          >
+            <DollarSign size={16} />
+            <span>Insights</span>
+          </button>
+
+          <button
             className={`btn-admin-nav ${activeTab === 'orders' ? 'active' : ''}`}
             onClick={() => setActiveTab('orders')}
           >
@@ -789,7 +903,7 @@ export default function AdminDashboard({ adminUser, onLogout, onProductChange })
       </div>
 
       {/* Settings Panel: Announcement Bar & Minimum Order Value */}
-      <div style={{
+      {activeTab !== 'analytics' && <div style={{
         background: '#fff',
         border: '1px solid #fee2e2',
         borderRadius: '10px',
@@ -884,10 +998,10 @@ export default function AdminDashboard({ adminUser, onLogout, onProductChange })
             </button>
           </div>
         </div>
-      </div>
+      </div>}
 
       {/* Top Metrics Cards */}
-      {stats && (
+      {stats && activeTab !== 'analytics' && (
         <div className="admin-stats-grid">
           <div className="stat-card">
             <div className="stat-icon"><DollarSign size={24} /></div>
@@ -939,6 +1053,17 @@ export default function AdminDashboard({ adminUser, onLogout, onProductChange })
           <div className="table-toolbar">
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
               <h3>Customer Orders &amp; Downloadable Bills</h3>
+              <button
+                type="button"
+                className="btn-action"
+                onClick={() => {
+                  setShowArchive(true);
+                  fetchArchivedOrders();
+                }}
+              >
+                <RefreshCw size={14} />
+                <span>View order archive</span>
+              </button>
               <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
                 {['All', ...ORDER_STATUS_OPTIONS].map(status => (
                   <button
@@ -1075,6 +1200,18 @@ export default function AdminDashboard({ adminUser, onLogout, onProductChange })
                               onClick={() => setSelectedOrder(order)}
                             >
                               <Eye size={14} />
+                            </button>
+                            <button
+                              className="btn-action"
+                              style={{ background: '#fff1f2', color: '#b91c1c', borderColor: '#fecaca' }}
+                              title="Archive this order. It will be hidden and can be restored later."
+                              aria-label={`Archive order ${order.id}`}
+                              onClick={() => {
+                                setArchiveTarget(order);
+                                setArchiveConfirmation('');
+                              }}
+                            >
+                              <Trash2 size={14} />
                             </button>
                           </div>
                         </td>
@@ -2200,7 +2337,109 @@ export default function AdminDashboard({ adminUser, onLogout, onProductChange })
         </div>
       )}
 
+      {activeTab === 'analytics' && (
+        <AdminAnalytics
+          orders={analyticsOrders}
+          products={analyticsProducts}
+          loading={analyticsLoading}
+          onRefresh={fetchAnalyticsData}
+        />
+      )}
+
       {activeTab === 'promocodes' && <PromoCodesPanel />}
+
+      {showArchive && (
+        <div className="modal-overlay" onClick={() => setShowArchive(false)}>
+          <div className="modal-content" onClick={(event) => event.stopPropagation()} style={{ maxWidth: '860px' }}>
+            <div className="modal-header">
+              <h3><RefreshCw size={20} /> Archived Orders</h3>
+              <button className="modal-close-btn" onClick={() => setShowArchive(false)} aria-label="Close archive">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="modal-body">
+              <p style={{ margin: '0 0 1rem', color: '#6b7280', fontSize: '0.85rem' }}>
+                Archived orders are hidden from active orders, customer tracking, and dashboard metrics. They remain stored here until restored.
+              </p>
+              {archiveLoading ? <p>Loading archived orders…</p> : archivedOrders.length === 0 ? (
+                <p style={{ padding: '1.5rem', textAlign: 'center', color: '#6b7280' }}>No archived orders.</p>
+              ) : (
+                <div className="table-responsive">
+                  <table className="admin-table">
+                    <thead>
+                      <tr><th>Order</th><th>Customer</th><th>Order date</th><th>Archived</th><th>Total</th><th>Action</th></tr>
+                    </thead>
+                    <tbody>
+                      {archivedOrders.map((order) => (
+                        <tr key={order.id}>
+                          <td><strong style={{ color: 'var(--primary-red)', fontFamily: 'monospace' }}>{order.id}</strong></td>
+                          <td>{order.customer_name}</td>
+                          <td>{new Date(order.created_at).toLocaleDateString('en-IN')}</td>
+                          <td>
+                            <div>{order.archived_at ? new Date(order.archived_at).toLocaleDateString('en-IN') : '—'}</div>
+                            {order.archived_by && <small style={{ color: '#6b7280' }}>by {order.archived_by}</small>}
+                          </td>
+                          <td>₹{Number(order.total_amount || 0).toLocaleString('en-IN')}</td>
+                          <td>
+                            <button type="button" className="btn-action" onClick={() => handleRestoreOrder(order)}>
+                              <RefreshCw size={14} /> Restore
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {archiveTarget && (
+        <div className="modal-overlay" onClick={() => !archiveSaving && setArchiveTarget(null)}>
+          <div className="modal-content" onClick={(event) => event.stopPropagation()} style={{ maxWidth: '480px' }}>
+            <div className="modal-header">
+              <h3><Trash2 size={20} /> Archive order?</h3>
+              <button className="modal-close-btn" onClick={() => !archiveSaving && setArchiveTarget(null)} aria-label="Close archive confirmation">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="modal-body">
+              <div style={{ padding: '0.85rem 1rem', color: '#7f1d1d', background: '#fff1f2', border: '1px solid #fecaca', borderRadius: 8, fontSize: '0.88rem', lineHeight: 1.5 }}>
+                <strong>This order will disappear from active orders, customer tracking, and dashboard metrics.</strong>
+                <div style={{ marginTop: '0.4rem' }}>The order and its items will remain stored in the archive and can be restored. Nothing will be permanently erased.</div>
+              </div>
+              <p style={{ margin: '1rem 0 0.45rem', fontSize: '0.88rem' }}>
+                To continue, type the full order ID <strong>{archiveTarget.id}</strong> below.
+              </p>
+              <form onSubmit={handleArchiveOrder}>
+                <input
+                  autoFocus
+                  type="text"
+                  className="form-control"
+                  autoComplete="off"
+                  value={archiveConfirmation}
+                  onChange={(event) => setArchiveConfirmation(event.target.value)}
+                  placeholder={archiveTarget.id}
+                  disabled={archiveSaving}
+                />
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.6rem', marginTop: '1rem' }}>
+                  <button type="button" className="btn-action" onClick={() => setArchiveTarget(null)} disabled={archiveSaving}>Cancel</button>
+                  <button
+                    type="submit"
+                    className="btn-action"
+                    style={{ color: '#fff', background: '#b91c1c', borderColor: '#b91c1c' }}
+                    disabled={archiveSaving || archiveConfirmation.trim() !== archiveTarget.id}
+                  >
+                    <Trash2 size={14} /> {archiveSaving ? 'Archiving…' : 'Archive order'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Standalone Printable & Downloadable Invoice Modal */}
       {invoiceOrder && (

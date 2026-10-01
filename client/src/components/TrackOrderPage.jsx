@@ -198,7 +198,7 @@ export default function TrackOrderPage({ initialSearchQuery = '', onOpenInvoice 
               }}>
                 <Truck size={16} />
                 <span>
-                  Dispatched via <strong>{order.courier_name || 'Festive Express Partner'}</strong>
+                  {order.courier_name && <>Dispatched via <strong>{order.courier_name}</strong></>}
                   {order.tracking_number && ` • Tracking AWB: ${order.tracking_number}`}
                 </span>
               </div>

@@ -209,12 +209,12 @@ router.get('/track', async (req, res) => {
     let orders = [];
 
     if (orderId && orderId.trim()) {
-      const order = db.get("SELECT * FROM orders WHERE LOWER(id) = LOWER(?)", [orderId.trim()]);
+      const order = db.get("SELECT * FROM orders WHERE LOWER(id) = LOWER(?) AND COALESCE(is_archived, 0) = 0", [orderId.trim()]);
       if (order) {
         orders.push(order);
       }
     } else if (phone && phone.trim()) {
-      orders = db.all("SELECT * FROM orders WHERE phone = ? ORDER BY created_at DESC", [phone.trim()]);
+      orders = db.all("SELECT * FROM orders WHERE phone = ? AND COALESCE(is_archived, 0) = 0 ORDER BY created_at DESC", [phone.trim()]);
     }
 
     if (orders.length === 0) {
@@ -247,11 +247,12 @@ router.get('/track', async (req, res) => {
 // GET /api/orders - Admin get all orders
 router.get('/', authenticateAdmin, async (req, res) => {
   try {
-    const { status, search } = req.query;
+    const { status, search, archived } = req.query;
     const db = await getDb();
 
-    let query = "SELECT * FROM orders WHERE 1=1";
-    const params = [];
+    const archiveFilter = archived === 'true' ? 1 : 0;
+    let query = "SELECT * FROM orders WHERE COALESCE(is_archived, 0) = ?";
+    const params = [archiveFilter];
 
     if (status && status !== 'All') {
       query += " AND status = ?";
@@ -293,7 +294,7 @@ router.get('/', authenticateAdmin, async (req, res) => {
 router.get('/:id', authenticateAdmin, async (req, res) => {
   try {
     const db = await getDb();
-    const order = db.get("SELECT * FROM orders WHERE id = ?", [req.params.id]);
+    const order = db.get("SELECT * FROM orders WHERE id = ? AND COALESCE(is_archived, 0) = 0", [req.params.id]);
     if (!order) {
       return res.status(404).json({ error: 'Order not found.' });
     }
@@ -319,13 +320,52 @@ router.get('/:id', authenticateAdmin, async (req, res) => {
   }
 });
 
+// DELETE /api/orders/:id - Soft-archive an order after an exact-ID confirmation.
+router.delete('/:id', authenticateAdmin, async (req, res) => {
+  try {
+    const db = await getDb();
+    const order = db.get("SELECT id, is_archived FROM orders WHERE id = ?", [req.params.id]);
+    if (!order) return res.status(404).json({ error: 'Order not found.' });
+    if (Number(order.is_archived) === 1) return res.status(409).json({ error: 'This order is already archived.' });
+    if (req.body?.confirmation !== order.id) {
+      return res.status(400).json({ error: 'Enter the exact order ID to confirm archiving.' });
+    }
+
+    const archivedAt = new Date().toISOString();
+    const archivedBy = req.admin?.username || req.admin?.sub || 'admin';
+    db.run('UPDATE orders SET is_archived = 1, archived_at = ?, archived_by = ? WHERE id = ?', [archivedAt, archivedBy, order.id]);
+    db.save();
+    res.json({ success: true, message: 'Order archived and can be restored.', orderId: order.id, archivedAt });
+  } catch (err) {
+    console.error('Error archiving order:', err);
+    res.status(500).json({ error: 'Failed to archive order.' });
+  }
+});
+
+// POST /api/orders/:id/restore - Return an archived order to active records.
+router.post('/:id/restore', authenticateAdmin, async (req, res) => {
+  try {
+    const db = await getDb();
+    const order = db.get("SELECT id, is_archived FROM orders WHERE id = ?", [req.params.id]);
+    if (!order) return res.status(404).json({ error: 'Order not found.' });
+    if (Number(order.is_archived) !== 1) return res.status(409).json({ error: 'This order is not archived.' });
+
+    db.run('UPDATE orders SET is_archived = 0 WHERE id = ?', [order.id]);
+    db.save();
+    res.json({ success: true, message: 'Order restored to active records.', orderId: order.id });
+  } catch (err) {
+    console.error('Error restoring order:', err);
+    res.status(500).json({ error: 'Failed to restore order.' });
+  }
+});
+
 // PATCH /api/orders/:id/status - Admin update order status & tracking info
 router.patch('/:id/status', authenticateAdmin, async (req, res) => {
   try {
     const { status, courier_name, tracking_number, note } = req.body;
     const db = await getDb();
 
-    const order = db.get("SELECT * FROM orders WHERE id = ?", [req.params.id]);
+    const order = db.get("SELECT * FROM orders WHERE id = ? AND COALESCE(is_archived, 0) = 0", [req.params.id]);
     if (!order) {
       return res.status(404).json({ error: 'Order not found.' });
     }

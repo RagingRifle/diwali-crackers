@@ -2,11 +2,11 @@ import React from 'react';
 import { Grid2X2 } from 'lucide-react';
 
 const CATEGORIES = [
-  { name: 'Sparklers', category: 'Sparklers', image: '/category-images/sparklers.jpg' },
-  { name: 'Flowerpots', category: 'Flowerpots', image: '/category-images/flowerpots.png' },
-  { name: 'Ground Chakkars', category: 'Ground Chakkars', image: '/category-images/ground-chakkars.jpg' },
-  { name: 'Novel Fireworks', category: 'Novelty Items', image: '/category-images/novel-fireworks.jpg' },
-  { name: 'Sound Crackers', category: 'Sound Crackers', image: '/category-images/sound-crackers.jpg' },
+  { name: 'Sparklers', category: 'Sparklers', image: '/category-images/sparklers.png' },
+  { name: 'Flowerpots', category: 'Flowerpots', image: '/category-images/fp.png' },
+  { name: 'Ground Chakkars', category: 'Ground Chakkars', image: '/category-images/gc.png' },
+  { name: 'Novel Fireworks', category: 'Novelty Items', image: '/category-images/nv.png' },
+  { name: 'Sound Crackers', category: 'Sound Crackers', image: '/category-images/sound.png' },
 ];
 
 export default function ShopByCategoryBar({ onSelectCategory }) {

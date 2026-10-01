@@ -98,6 +98,9 @@ function initTables(db) {
       status TEXT DEFAULT 'Pending',
       courier_name TEXT DEFAULT '',
       tracking_number TEXT DEFAULT '',
+      is_archived INTEGER DEFAULT 0,
+      archived_at TEXT DEFAULT NULL,
+      archived_by TEXT DEFAULT '',
       status_updates TEXT NOT NULL,
       created_at TEXT DEFAULT (datetime('now'))
     );
@@ -171,6 +174,9 @@ function initTables(db) {
     const orderCols = db.all("PRAGMA table_info(orders)").map(c => c.name);
     if (!orderCols.includes('promo_code')) db.rawDb.run("ALTER TABLE orders ADD COLUMN promo_code TEXT DEFAULT ''");
     if (!orderCols.includes('promo_discount')) db.rawDb.run("ALTER TABLE orders ADD COLUMN promo_discount REAL DEFAULT 0");
+    if (!orderCols.includes('is_archived')) db.rawDb.run("ALTER TABLE orders ADD COLUMN is_archived INTEGER DEFAULT 0");
+    if (!orderCols.includes('archived_at')) db.rawDb.run("ALTER TABLE orders ADD COLUMN archived_at TEXT DEFAULT NULL");
+    if (!orderCols.includes('archived_by')) db.rawDb.run("ALTER TABLE orders ADD COLUMN archived_by TEXT DEFAULT ''");
 
     const productCols = db.all("PRAGMA table_info(products)").map(c => c.name);
     if (!productCols.includes('is_combo')) {
@@ -181,6 +187,9 @@ function initTables(db) {
     }
     if (!productCols.includes('discount_percent')) {
       db.rawDb.run("ALTER TABLE products ADD COLUMN discount_percent REAL DEFAULT 0");
+    }
+    if (!productCols.includes('buying_cost')) {
+      db.rawDb.run("ALTER TABLE products ADD COLUMN buying_cost REAL DEFAULT 0");
     }
 
     const orderItemCols = db.all("PRAGMA table_info(order_items)").map(c => c.name);

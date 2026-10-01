@@ -1,14 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  Sparkles, Shield, Truck, ArrowRight,
-  Star, Package, Zap, Phone, CheckCircle, MapPin
+  ArrowRight, Phone, MapPin
 } from 'lucide-react';
 import heroBg from '../assets/diwali_hero.png';
+import offerArtwork from '../assets/rt.png';
 import ProductGrid from './ProductGrid';
 import FeaturedCombos from './FeaturedCombos';
 import TestimonialsCarousel from './TestimonialsCarousel';
 import ShopByCategoryBar from './ShopByCategoryBar';
-import heroMobile from '../assets/hero_mobile.jpeg';
+import heroMobile from '../assets/hero_mobile.png';
+import trustLogo1 from '../assets/1.1.png';
+import trustLogo2 from '../assets/1.2.png';
+import trustLogo3 from '../assets/1.3.png';
+import trustLogo4 from '../assets/1.4.png';
+import orderLogo1 from '../assets/2.1.png';
+import orderLogo2 from '../assets/2.2.png';
+import orderLogo3 from '../assets/2.3.png';
 
 /* ─── Countdown to Diwali 2026 (Nov 8, 2026) ────────────────────────────── */
 function useCountdown(targetDate) {
@@ -33,10 +40,10 @@ function useCountdown(targetDate) {
 
 /* ─── Trust Badges ──────────────────────────────────────────────────────── */
 const TRUST = [
-  { icon: <Shield size={28} />, title: 'Premium Sivakasi Quality', desc: 'Top quality Sivakasi fireworks tested for high performance & safety' },
-  { icon: <Truck size={28} />,  title: 'Express Delivery',     desc: 'Safe and secure packaging shipped directly from Sivakasi' },
-  { icon: <Star size={28} />,   title: '2000+ Happy Families', desc: 'Trusted by customers across India for 5+ festive seasons' },
-  { icon: <Zap size={28} />,    title: 'Live Order Tracking',   desc: 'Track your order anytime with your mobile number' },
+  { icon: trustLogo1, title: 'Premium Sivakasi Quality', desc: 'Top quality Sivakasi fireworks tested for high performance & safety' },
+  { icon: trustLogo2, title: 'Express Delivery', desc: 'Safe and secure packaging shipped directly from Sivakasi' },
+  { icon: trustLogo3, title: '2000+ Happy Families', desc: 'Trusted by customers across India for 5+ festive seasons' },
+  { icon: trustLogo4, title: 'Live Order Tracking', desc: 'Track your order anytime with your mobile number' },
 ];
 
 /* ─── Testimonials ──────────────────────────────────────────────────────── */
@@ -62,7 +69,7 @@ const PHONE_NUMBERS = [
   '91504 31251',
   '96266 22101'
 ];
-const MAP_URL = 'Viswanatham, Sivakasi, Viswanatham, Tamil Nadu 626189';
+const MAP_URL = 'https://www.google.com/maps/search/?api=1&query=9.421799%2C77.807465';
 
 function CountUp({ target, suffix = '' }) {
   const [count, setCount] = useState(0);
@@ -208,17 +215,13 @@ export default function HomePage({ setCurrentView, onSelectCategory, cart = [], 
             </button>
           </div>
           <div className="hp-feature-banner__visual">
-            <div className="hp-feature-banner__burst">85% OFF</div>
-            <div className="hp-feature-banner__emojis">
-              <span>🎆</span><span>✨</span><span>🎇</span>
-              <span>🪔</span><span>🧨</span><span>🚀</span>
-            </div>
+            <img src={offerArtwork} alt="Up to 80% off Diwali crackers" />
           </div>
         </div>
       </section>
 
       {/* ══════════════════ WHY CHOOSE US ══════════════════ */}
-      <section className="hp-section hp-section--light">
+      <section className="hp-section hp-section--white">
         <div className="hp-section__inner">
           <div className="hp-section__header">
             <h2 className="hp-section__title">Why Choose Dinosaur Crackers?</h2>
@@ -227,7 +230,7 @@ export default function HomePage({ setCurrentView, onSelectCategory, cart = [], 
           <div className="hp-trust" style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '1rem' }}>
             {TRUST.map((t) => (
               <div className="hp-trust__card" key={t.title} style={{ flex: '0 1 260px' }}>
-                <div className="hp-trust__icon">{t.icon}</div>
+                <div className="hp-trust__icon"><img src={t.icon} alt="" /></div>
                 <h3 className="hp-trust__title">{t.title}</h3>
                 <p className="hp-trust__desc">{t.desc}</p>
               </div>
@@ -237,21 +240,21 @@ export default function HomePage({ setCurrentView, onSelectCategory, cart = [], 
       </section>
 
       {/* ══════════════════ ORDER IN 3 STEPS ══════════════════ */}
-      <section className="hp-section">
+      <section className="hp-section hp-section--red">
         <div className="hp-section__inner">
           <div className="hp-section__header">
             <h2 className="hp-section__title">Order in 3 Simple Steps</h2>
             <p className="hp-section__sub">Simple, fast, and delivered to your doorstep</p>
           </div>
-          <div className="hp-steps" style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+          <div className="hp-steps">
             {[
-              { step: '01', icon: <Package size={32} />, title: 'Browse & Add to Cart', desc: 'Pick from 50+ fireworks varieties (Min. order ₹3,000). Add quantities as you like.' },
-              { step: '02', icon: <Phone size={32} />,   title: 'Place Order with Phone', desc: 'Enter your name, phone number, and delivery address to confirm.' },
-              { step: '03', icon: <CheckCircle size={32} />, title: 'Track & Celebrate!', desc: 'Track live with your phone number and burst crackers when it arrives!' },
+              { step: '01', icon: orderLogo1, title: 'Browse & Add to Cart', desc: 'Pick from 50+ fireworks varieties (Min. order ₹3,000). Add quantities as you like.' },
+              { step: '02', icon: orderLogo2, title: 'Place Order with Phone', desc: 'Enter your name, phone number, and delivery address to confirm.' },
+              { step: '03', icon: orderLogo3, title: 'Track & Celebrate!', desc: 'Track live with your phone number and burst crackers when it arrives!' },
             ].map((s) => (
               <div className="hp-step" key={s.step}>
                 <div className="hp-step__num">{s.step}</div>
-                <div className="hp-step__icon">{s.icon}</div>
+                <div className="hp-step__icon"><img src={s.icon} alt="" /></div>
                 <h3 className="hp-step__title">{s.title}</h3>
                 <p className="hp-step__desc">{s.desc}</p>
               </div>
@@ -267,7 +270,7 @@ export default function HomePage({ setCurrentView, onSelectCategory, cart = [], 
       </section>
 
       {/* ══════════════════ TESTIMONIALS (AUTO-MOVING CAROUSEL) ══════════════════ */}
-      <section className="hp-section hp-section--light">
+      <section className="hp-section hp-section--white">
         <div className="hp-section__inner">
           <div className="hp-section__header">
             <h2 className="hp-section__title">What Our Customers Say</h2>
@@ -278,7 +281,7 @@ export default function HomePage({ setCurrentView, onSelectCategory, cart = [], 
       </section>
 
       {/* ══════════════════ SIVAKASI HUB LOCATION & DIRECT CONTACT ══════════════════ */}
-      <section className="hp-section" style={{ background: '#fffbeb', borderTop: '2px solid #fef3c7', borderBottom: '2px solid #fef3c7' }}>
+      <section className="hp-section hp-section--red">
         <div className="hp-section__inner">
           <div className="hp-section__header">
             <h2 className="hp-section__title">📍 Direct Sivakasi Dispatch Hub &amp; Support</h2>
@@ -377,7 +380,7 @@ export default function HomePage({ setCurrentView, onSelectCategory, cart = [], 
 
       {/* ══════════════════ FINAL CTA BAND ══════════════════ */}
       <section className="hp-cta-band">
-        <h2>🎆 Diwali 2026 is almost here!</h2>
+        <h2>Diwali 2026 is almost here!</h2>
         <p>Don't miss out — stock up on your favourite fireworks before they sell out.</p>
         <button className="hp-btn hp-btn--white" onClick={() => goShop()}>
           Shop All Crackers <ArrowRight size={16} />

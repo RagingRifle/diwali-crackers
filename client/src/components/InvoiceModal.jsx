@@ -240,11 +240,11 @@ export default function InvoiceModal({ isOpen, onClose, order }) {
     <div class="inv-header">
       <div class="inv-logo">
         <div style="display:flex; align-items:center; gap:5px;">
-          <span style="font-size:18px;">🪔</span>
+          <img src="${window.location.origin}/logo.png" alt="Dinosaur Crackers logo" style="width:30px; height:30px; object-fit:contain;" />
           <h1>DINOSAUR CRACKERS FIREWORKS</h1>
         </div>
-        <p>Direct Sivakasi Factory Fireworks • Certified CSIR-NEERI Green Crackers</p>
-        <p>Hub: 4/128 Fireworks Road, Sivakasi - 626123, Tamil Nadu • Helpline: +91 98765 43210</p>
+        <p>Direct Sivakasi Factory Fireworks</p>
+        <p>Address: Sri Velavan Nagar, Viswanatham, Sivakasi, Tamil Nadu 626189 • Contact: 93840 05248, 75581 75156</p>
       </div>
 
       <div class="inv-badge">
@@ -269,9 +269,8 @@ export default function InvoiceModal({ isOpen, onClose, order }) {
       <div class="inv-box">
         <h3>Shipping &amp; Logistics</h3>
         <p>
-          <strong>Dispatch Hub:</strong> Sivakasi Central Logistics Hub<br />
-          <strong>Courier:</strong> ${order.courier_name || 'Festive Express Partner'}<br />
-          <strong>AWB Tracking:</strong> ${order.tracking_number || 'Generated on dispatch'}<br />
+          ${order.courier_name ? `<strong>Courier:</strong> ${order.courier_name}<br />` : ''}
+          ${order.tracking_number ? `<strong>AWB Tracking:</strong> ${order.tracking_number}<br />` : ''}
           ${order.notes ? `<strong>Note:</strong> ${order.notes}` : ''}
         </p>
       </div>
@@ -299,8 +298,7 @@ export default function InvoiceModal({ isOpen, onClose, order }) {
     <!-- Summary & Notice -->
     <div class="summary-wrap">
       <div class="safety-notice">
-        <strong style="color:#111;">Safety &amp; Compliance Notes:</strong><br />
-        • Certified Green Crackers with low smoke and eco-friendly composition.<br />
+        <strong style="color:#111;">Safety Notes:</strong><br />
         • Store in a cool, dry place away from children. Always light in open areas.<br />
         • Thank you for celebrating with Dinosaur Crackers Fireworks!
       </div>
@@ -336,7 +334,7 @@ export default function InvoiceModal({ isOpen, onClose, order }) {
     <!-- Footer -->
     <div class="inv-footer">
       <div>
-        <p style="font-weight:700; color:#b91c1c;">Happy &amp; Safe Diwali from DINOSAUR CRACKERS! 🪔✨</p>
+        <p style="font-weight:700; color:#b91c1c; display:flex; align-items:center; gap:5px;">Happy &amp; Safe Diwali from DINOSAUR CRACKERS! <img src="${window.location.origin}/logo.png" alt="Dinosaur Crackers logo" style="width:20px; height:20px; object-fit:contain;" /></p>
         <p style="color:#9ca3af; font-size:8.5px;">Computer generated festive tax invoice / estimate.</p>
       </div>
 
@@ -428,14 +426,14 @@ export default function InvoiceModal({ isOpen, onClose, order }) {
             <div className="inv-header" style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #b91c1c', paddingBottom: '8px', marginBottom: '12px' }}>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ fontSize: '1.4rem' }}>🪔</span>
+                  <img src="/logo.png" alt="Dinosaur Crackers logo" style={{ width: 36, height: 36, objectFit: 'contain' }} />
                   <h1 style={{ margin: 0, color: '#b91c1c', fontSize: '1.15rem', fontWeight: 900 }}>DINOSAUR CRACKERS FIREWORKS</h1>
                 </div>
                 <p style={{ margin: '2px 0 0', color: '#6b7280', fontSize: '0.75rem' }}>
-                  Direct Sivakasi Factory Fireworks • Certified CSIR-NEERI Green Crackers
+                  Direct Sivakasi Factory Fireworks
                 </p>
                 <p style={{ margin: '1px 0 0', color: '#6b7280', fontSize: '0.72rem' }}>
-                  Factory Hub: 4/128 Fireworks Road, Sivakasi - 626123, Tamil Nadu • Helpline: +91 98765 43210
+                  Address: Sri Velavan Nagar, Viswanatham, Sivakasi, Tamil Nadu 626189 • Contact: 93840 05248, 75581 75156
                 </p>
               </div>
 
@@ -473,9 +471,8 @@ export default function InvoiceModal({ isOpen, onClose, order }) {
               <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '4px', padding: '0.5rem 0.75rem' }}>
                 <h3 style={{ margin: '0 0 3px', fontSize: '0.75rem', textTransform: 'uppercase', color: '#b91c1c', fontWeight: 800 }}>Shipping &amp; Logistics</h3>
                 <p style={{ margin: 0, fontSize: '0.8rem', lineHeight: '1.4', color: '#374151' }}>
-                  <strong>Dispatch Hub:</strong> Sivakasi Central Logistics Hub<br />
-                  <strong>Courier:</strong> {order.courier_name || 'Festive Express Partner'}<br />
-                  <strong>AWB Tracking:</strong> {order.tracking_number || 'Generated on dispatch'}<br />
+                  {order.courier_name && <><strong>Courier:</strong> {order.courier_name}<br /></>}
+                  {order.tracking_number && <><strong>AWB Tracking:</strong> {order.tracking_number}<br /></>}
                   {order.notes && <span><strong>Note:</strong> {order.notes}</span>}
                 </p>
               </div>
@@ -540,8 +537,7 @@ export default function InvoiceModal({ isOpen, onClose, order }) {
             {/* Summary & Safety Notice */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
               <div style={{ maxWidth: '380px', fontSize: '0.72rem', color: '#6b7280', lineHeight: '1.4' }}>
-                <strong style={{ color: '#111' }}>Safety &amp; Compliance Notes:</strong><br />
-                • Certified CSIR-NEERI Green Crackers with low smoke emissions.<br />
+                <strong style={{ color: '#111' }}>Safety Notes:</strong><br />
                 • Store in a cool dry place away from children. Always light in open areas.<br />
                 • Thank you for celebrating with Dinosaur Crackers Fireworks!
               </div>
@@ -580,7 +576,7 @@ export default function InvoiceModal({ isOpen, onClose, order }) {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '12px', paddingTop: '8px', borderTop: '1px solid #e5e7eb' }}>
               <div>
                 <p style={{ margin: 0, fontSize: '0.78rem', fontWeight: 700, color: '#b91c1c' }}>
-                  Happy &amp; Safe Diwali from DINOSAUR CRACKERS! 🪔✨
+                  Happy &amp; Safe Diwali from DINOSAUR CRACKERS! <img src="/logo.png" alt="Dinosaur Crackers logo" style={{ width: 24, height: 24, objectFit: 'contain' }} />
                 </p>
                 <p style={{ margin: '1px 0 0', fontSize: '0.68rem', color: '#9ca3af' }}>
                   Computer generated festive tax invoice / estimate.
