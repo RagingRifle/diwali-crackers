@@ -3811,6 +3811,23 @@ table.admin-table tr:hover {
   margin-bottom: 1.75rem;
 }
 
+.hp-shop-categories .hp-section__title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  text-transform: uppercase;
+}
+
+.hp-shop-categories .hp-section__title::before,
+.hp-shop-categories .hp-section__title::after {
+  content: '';
+  display: block;
+  width: clamp(24px, 5vw, 56px);
+  height: 2px;
+  background: #d1dfd2;
+}
+
 .hp-category-icon {
   width: 76px;
   height: 76px;
@@ -3822,8 +3839,10 @@ table.admin-table tr:hover {
 .hp-category-image-wrap {
   position: relative;
   width: 100%;
-  height: 100px;
-  flex: 0 0 100px;
+  height: 126px;
+  flex: 0 0 126px;
+  padding: 0.35rem;
+  box-sizing: border-box;
   display: grid;
   place-items: center;
 }
@@ -3901,12 +3920,18 @@ table.admin-table tr:hover {
   }
 
   .hp-shop-categories .hp-category-image-wrap {
-    height: 88px;
-    flex-basis: 88px;
+    height: 110px;
+    flex-basis: 110px;
   }
 
   .hp-shop-categories .hp-cat-name {
     font-size: 0.72rem;
+  }
+
+  .hp-shop-categories .hp-cat-card--all .hp-cat-name {
+    white-space: normal;
+    line-height: 1.2;
+    text-align: center;
   }
 }
 
