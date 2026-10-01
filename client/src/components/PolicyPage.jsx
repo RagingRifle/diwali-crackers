@@ -14,7 +14,7 @@ const POLICIES = {
   },
   privacy: {
     title: 'Privacy Policy',
-    intro: 'This Privacy Policy explains how Standard Fireworks collects, uses and protects the personal information you share with us when submitting a product enquiry.',
+    intro: 'This Privacy Policy explains how Dinosaur Crackers collects, uses and protects the personal information you share with us when submitting a product enquiry.',
     sections: [
       { heading: 'Information We Collect', body: "Name, mobile number, email, address and enquiry details submitted via our website's enquiry form." },
       { heading: 'How We Use It', body: 'Solely to process and follow up on your enquiry. We do not sell or share your information with third parties.' },
