@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Navbar from './components/Navbar';
-import ShopByCategoryBar from './components/ShopByCategoryBar';
 import ProductRowItem from './components/ProductRowItem';
 import SelectedItemsSidebar from './components/SelectedItemsSidebar';
 import CartDrawer from './components/CartDrawer';
@@ -167,16 +166,6 @@ export default function App() {
         {currentView === 'shop' && (
           <>
             {/* ── SHOP BY CATEGORY BAR ── */}
-            <ShopByCategoryBar
-              selectedCategory={selectedCategory}
-              onSelectCategory={(cat) => {
-                setSelectedCategory(cat);
-                setSearchQuery('');
-                const el = document.getElementById('catalog-3col');
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
-              }}
-            />
-
             {/* ── MOBILE CATEGORY CHIPS BAR (Sticky under navbar on mobile) ── */}
             <div className="mobile-cat-chips-bar">
               <button

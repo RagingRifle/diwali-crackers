@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Gift, ShoppingCart } from 'lucide-react';
 
 function ComboCard({ combo, onAddToCart }) {
   const [showContents, setShowContents] = useState(false);
@@ -13,14 +14,14 @@ function ComboCard({ combo, onAddToCart }) {
       )}
       <div style={{ background: '#fff', border: '2px solid #fde68a', borderRadius: '12px', padding: '1.25rem', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span style={{ background: '#b91c1c', color: '#fff', fontSize: '0.65rem', fontWeight: 800, padding: '0.1rem 0.5rem', borderRadius: '4px', letterSpacing: '0.05em' }}>ðŸŽ COMBO</span>
+          <span style={{ background: '#b91c1c', color: '#fff', fontSize: '0.65rem', fontWeight: 800, padding: '0.1rem 0.5rem', borderRadius: '4px', letterSpacing: '0.05em' }}>COMBO</span>
         </div>
         {combo.image ? (
           <img src={combo.image} alt={combo.name} onClick={() => setShowImage(true)}
             style={{ width: '100%', height: '180px', objectFit: 'contain', borderRadius: '8px', cursor: 'zoom-in', background: '#fff' }}
             onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} />
         ) : (
-          <div style={{ width: '100%', height: '100px', background: '#fef3c7', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem' }}>ðŸŽ†</div>
+          <div style={{ width: '100%', height: '100px', background: '#fef3c7', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Gift size={40} color="#b91c1c" /></div>
         )}
         <h4 style={{ margin: 0, fontSize: '0.97rem', fontWeight: 800, color: '#1f2937', lineHeight: '1.3' }}>{combo.name}</h4>
         {combo.description && (
@@ -32,8 +33,8 @@ function ComboCard({ combo, onAddToCart }) {
           </div>
         )}
         <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontWeight: 800, fontSize: '1.2rem', color: '#b91c1c' }}>â‚¹{combo.price.toFixed(0)}</span>
-          <button onClick={() => onAddToCart && onAddToCart(combo)} style={{ background: '#b91c1c', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.5rem 1rem', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>ðŸ›’ Add</button>
+          <span style={{ fontWeight: 800, fontSize: '1.2rem', color: '#b91c1c' }}>{'\u20B9'}{combo.price.toLocaleString('en-IN')}</span>
+          <button onClick={() => onAddToCart && onAddToCart(combo)} style={{ background: '#b91c1c', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.5rem 1rem', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.35rem' }}><ShoppingCart size={16} /> Add</button>
         </div>
       </div>
     </>

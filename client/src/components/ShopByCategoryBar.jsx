@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Sparkles, Flame, CircleDot, Rocket, Gift, Grid2X2 } from 'lucide-react';
 
 const CATEGORIES = [
@@ -11,6 +11,15 @@ const CATEGORIES = [
 ];
 
 export default function ShopByCategoryBar({ onSelectCategory }) {
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    fetch('/api/products?inStockOnly=true')
+      .then((response) => response.json())
+      .then((data) => { if (data.success) setProducts(data.products || []); })
+      .catch(() => {});
+  }, []);
+
   return (
     <section className="hp-section hp-shop-categories" aria-labelledby="shop-categories-title">
       <div className="hp-section__inner">
@@ -18,15 +27,24 @@ export default function ShopByCategoryBar({ onSelectCategory }) {
           <h2 className="hp-section__title" id="shop-categories-title">Shop by Category</h2>
         </div>
         <div className="hp-categories">
-          {CATEGORIES.map(({ name, icon: Icon, tint }) => (
+          {CATEGORIES.map(({ name, icon: Icon, tint }) => {
+            const product = products.find((item) => item.category === name && (item.image || item.code));
+            const image = product && (product.image || `/products/${product.code}.jpg`);
+            return (
             <button className="hp-cat-card" key={name}
               style={{ '--cat-bg': tint, '--cat-border': '#f1d4d4' }}
               onClick={() => onSelectCategory?.(name)} type="button">
-              <span className="hp-category-icon"><Icon size={38} strokeWidth={1.8} /></span>
+              {image ? (
+                <span className="hp-category-image-wrap">
+                  <img className="hp-category-product-image" src={image} alt={product.name}
+                  onError={(event) => { event.currentTarget.style.display = 'none'; }} />
+                  <Icon className="hp-category-image-fallback" size={38} strokeWidth={1.8} />
+                </span>
+              ) : <span className="hp-category-icon"><Icon size={38} strokeWidth={1.8} /></span>}
               <span className="hp-cat-name">{name}</span>
               <span className="hp-category-link">View products</span>
             </button>
-          ))}
+          );})}
           <button className="hp-cat-card hp-cat-card--all" type="button" onClick={() => onSelectCategory?.('All')}>
             <Grid2X2 size={34} />
             <span className="hp-cat-name">View All Categories</span>
