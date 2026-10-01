@@ -3750,12 +3750,9 @@ table.admin-table tr:hover {
 
 /* ── Category Grid ───────────────────────────────────── */
 .hp-categories {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 1.25rem;
-  overflow-x: auto;
-  padding: 0.25rem 0 0.75rem;
-  scrollbar-width: thin;
-  -webkit-overflow-scrolling: touch;
 }
 
 .hp-cat-card {
@@ -3763,8 +3760,8 @@ table.admin-table tr:hover {
   border: 2px solid var(--cat-border, #D32F2F);
   border-radius: 16px;
   padding: 0.75rem;
-  flex: 0 0 160px;
   height: 190px;
+  min-width: 0;
   box-sizing: border-box;
   text-align: center;
   cursor: pointer;
@@ -3876,6 +3873,41 @@ table.admin-table tr:hover {
 
 .hp-cat-card--all:hover {
   background: #a80d26;
+}
+
+@media (max-width: 900px) {
+  .hp-shop-categories .hp-categories {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.85rem;
+  }
+
+  .hp-shop-categories .hp-cat-card {
+    padding: 0.65rem 0.4rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .hp-shop-categories {
+    padding: 2.5rem 1rem;
+  }
+
+  .hp-shop-categories .hp-categories {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+  }
+
+  .hp-shop-categories .hp-cat-card {
+    height: 170px;
+  }
+
+  .hp-shop-categories .hp-category-image-wrap {
+    height: 88px;
+    flex-basis: 88px;
+  }
+
+  .hp-shop-categories .hp-cat-name {
+    font-size: 0.72rem;
+  }
 }
 
 /* ── Feature Banner ──────────────────────────────────── */
