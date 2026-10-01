@@ -3845,16 +3845,17 @@ table.admin-table tr:hover {
   box-sizing: border-box;
   display: grid;
   place-items: center;
+  overflow: hidden;
 }
 
-.hp-category-product-image {
-  position: relative;
+.hp-category-image {
+  position: absolute;
+  inset: 0.35rem;
   z-index: 1;
-  width: 100%;
-  height: 100%;
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
+  width: calc(100% - 0.7rem);
+  height: calc(100% - 0.7rem);
+  border-radius: 6px;
+  object-fit: cover;
 }
 
 .hp-category-image-fallback {
