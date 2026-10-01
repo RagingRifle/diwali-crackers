@@ -119,7 +119,7 @@ export default function ProductGrid({ cart = [], onAddToCart, onUpdateQuantity, 
         whiteSpace: 'nowrap',
         scrollbarWidth: 'thin',
       }}>
-        {categories.slice(0, 10).map(cat => (
+        {categories.map(cat => (
           <button
             key={cat}
             onClick={() => setSelectedCat(cat)}

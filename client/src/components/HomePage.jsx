@@ -7,6 +7,7 @@ import heroBg from '../assets/diwali_hero.png';
 import ProductGrid from './ProductGrid';
 import FeaturedCombos from './FeaturedCombos';
 import TestimonialsCarousel from './TestimonialsCarousel';
+import ShopByCategoryBar from './ShopByCategoryBar';
 import heroMobile from '../assets/hero_mobile.jpeg';
 
 /* ─── Countdown to Diwali 2026 (Nov 8, 2026) ────────────────────────────── */
@@ -167,6 +168,8 @@ export default function HomePage({ setCurrentView, onSelectCategory, cart = [], 
       </section>
 
       {/* ══════════════════ FEATURED COMBOS & SCROLLABLE PRODUCTS BOX ══════════════════ */}
+      <ShopByCategoryBar onSelectCategory={goShop} />
+
       <section className="hp-section">
         <div className="hp-section__inner">
           {/* Section 1: Featured Combos */}

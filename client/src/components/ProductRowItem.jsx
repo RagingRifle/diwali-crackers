@@ -30,7 +30,7 @@ export default function ProductRowItem({ product, cartItem, onAddToCart, onUpdat
   return (
     <>
       {/* ── Image lightbox ── */}
-      {lightboxOpen && !isCombo && (
+      {lightboxOpen && (
         <div
           onClick={() => setLightboxOpen(false)}
           style={{
@@ -60,15 +60,15 @@ export default function ProductRowItem({ product, cartItem, onAddToCart, onUpdat
 
         {/* Thumbnail */}
         <div className="product-row__img">
-          {isCombo ? (
+          {isCombo && !product.image ? (
             <div className="img-combo-badge">🎁</div>
           ) : (
             <img
-              src={imgSrc}
+              src={isCombo ? product.image : imgSrc}
               alt={product.name}
               loading="lazy"
               onClick={() => setLightboxOpen(true)}
-              style={{ cursor: 'zoom-in' }}
+              style={{ cursor: 'zoom-in', objectFit: isCombo ? 'contain' : undefined }}
               onError={(e) => {
                 e.target.onerror = null;
                 e.target.style.display = 'none';
@@ -110,15 +110,8 @@ export default function ProductRowItem({ product, cartItem, onAddToCart, onUpdat
 
           <p className="product-row__pack">{product.content || product.pack_size || '1 Box'}</p>
 
-          {/* Description for combos */}
-          {isCombo && product.description && (
-            <p style={{ fontSize: '0.8rem', color: '#6b7280', margin: '0.15rem 0 0.25rem', lineHeight: '1.4' }}>
-              {product.description}
-            </p>
-          )}
-
-          {/* Expandable combo items (legacy combos with items list) */}
-          {isCombo && comboItems.length > 0 && (
+          {/* Combo contents are collapsed until requested */}
+          {isCombo && (product.description || comboItems.length > 0) && (
             <div style={{ margin: '0.2rem 0 0.35rem' }}>
               <button
                 type="button"
@@ -129,7 +122,7 @@ export default function ProductRowItem({ product, cartItem, onAddToCart, onUpdat
                   padding: 0, display: 'inline-flex', alignItems: 'center', gap: '0.2rem'
                 }}
               >
-                <span>{showComboItems ? 'Hide Items Inside' : `View ${comboItems.length} Items Included`}</span>
+                <span>{showComboItems ? 'Hide Contents' : 'See Contents'}</span>
                 {showComboItems ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
               </button>
 
@@ -139,6 +132,7 @@ export default function ProductRowItem({ product, cartItem, onAddToCart, onUpdat
                   border: '1px solid #fef3c7', borderRadius: '6px',
                   padding: '0.4rem 0.6rem', fontSize: '0.75rem', color: '#4b5563'
                 }}>
+                  {product.description && <p style={{ margin: '0 0 0.35rem', lineHeight: '1.4' }}>{product.description}</p>}
                   {comboItems.map((ci, idx) => (
                     <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '1px 0' }}>
                       <span>• {ci.quantity}x {ci.name}</span>

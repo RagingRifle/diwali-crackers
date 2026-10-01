@@ -10,9 +10,11 @@ import TrackOrderPage from './components/TrackOrderPage';
 import InvoiceModal from './components/InvoiceModal';
 import { Phone, Search, ArrowRight, MapPin, BadgeCheck, PackageCheck, Smartphone } from 'lucide-react';
 import HomePage from './components/HomePage';
+import PolicyPage from './components/PolicyPage';
 
 export default function App() {
   const [currentView, setCurrentView] = useState('home');
+  const [selectedPolicy, setSelectedPolicy] = useState('terms');
   const [products, setProducts] = useState([]);
   const [categoryMeta, setCategoryMeta] = useState([]); // [{category, count}]
   const [loadingProducts, setLoadingProducts] = useState(true);
@@ -338,6 +340,12 @@ export default function App() {
             onOpenInvoice={(order) => setInvoiceOrder(order)}
           />
         )}
+        {currentView === 'policy' && (
+          <PolicyPage
+            policy={selectedPolicy}
+            onHome={() => { setCurrentView('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+          />
+        )}
       </main>
 
       {/* Cart Drawer */}
@@ -414,6 +422,24 @@ export default function App() {
               >
                  Live Order Tracking
               </span>
+            </div>
+          </div>
+
+          <div className="footer-col">
+            <h4>Policies</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.88rem' }}>
+              {[
+                ['terms', 'Terms & Conditions'],
+                ['refunds', 'Refund Policy'],
+                ['privacy', 'Privacy Policy'],
+                ['shipping', 'Shipping Policy'],
+              ].map(([key, label]) => (
+                <button key={key} type="button" className="footer-policy-link" onClick={() => {
+                  setSelectedPolicy(key);
+                  setCurrentView('policy');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}>{label}</button>
+              ))}
             </div>
           </div>
 

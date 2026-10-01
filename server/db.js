@@ -224,6 +224,26 @@ function initTables(db) {
 
   // Seed default combo bundles if none exist
   seedCombosIfEmpty(db);
+  seedGiftBoxesIfMissing(db);
+}
+
+function seedGiftBoxesIfMissing(db) {
+  const giftBoxes = [
+    { code: 'GB-144', name: '30 Items', price: 520 },
+    { code: 'GB-145', name: '35 Items', price: 555 },
+    { code: 'GB-146', name: '40 Items', price: 655 },
+    { code: 'GB-147', name: '45 Items', price: 710 },
+    { code: 'GB-148', name: '50 Items', price: 895 },
+    { code: 'GB-149', name: '60 Items', price: 1050 },
+  ];
+
+  for (const item of giftBoxes) {
+    if (db.get('SELECT id FROM products WHERE code = ?', [item.code])) continue;
+    db.run(`
+      INSERT INTO products (code, name, category, content, price, mrp, discount_percent, image, description, pack_size, in_stock, featured, is_combo, combo_items)
+      VALUES (?, ?, 'Gift boxes', 'PCS', ?, ?, 0, '', '', 'PCS', 1, 0, 0, '')
+    `, [item.code, item.name, item.price, item.price]);
+  }
 }
 
 // ─── Category mapping ────────────────────────────────────────────────────────
