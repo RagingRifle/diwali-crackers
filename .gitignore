@@ -9,6 +9,8 @@ client/dist/
 # Environment and local databases
 .env
 *.local
+*.db
+*.db-journal
 /server/uploads/
 
 # Logs
