@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  ArrowRight, Phone, MapPin
+  ArrowRight, Phone, MapPin, X
 } from 'lucide-react';
 import heroBg from '../assets/diwali_hero.png';
 import offerArtwork from '../assets/rt.png';
+import popupArtwork from '../assets/popup.png';
 import ProductGrid from './ProductGrid';
 import FeaturedCombos from './FeaturedCombos';
 import TestimonialsCarousel from './TestimonialsCarousel';
@@ -117,6 +118,24 @@ function CountUp({ target, suffix = '' }) {
 
 export default function HomePage({ setCurrentView, onSelectCategory, cart = [], onAddToCart, onUpdateQuantity }) {
   const { days, hours, minutes, seconds } = useCountdown('2026-11-08T00:00:00');
+  const [isWelcomeOfferOpen, setIsWelcomeOfferOpen] = useState(() => {
+    try {
+      if (sessionStorage.getItem('diwali_welcome_offer_seen')) return false;
+      sessionStorage.setItem('diwali_welcome_offer_seen', 'true');
+      return true;
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    if (!isWelcomeOfferOpen) return undefined;
+    const closeOnEscape = (event) => {
+      if (event.key === 'Escape') setIsWelcomeOfferOpen(false);
+    };
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, [isWelcomeOfferOpen]);
 
   const goShop = (cat) => {
     if (cat && onSelectCategory) onSelectCategory(cat);
@@ -132,6 +151,27 @@ export default function HomePage({ setCurrentView, onSelectCategory, cart = [], 
 
   return (
     <div className="homepage">
+      {isWelcomeOfferOpen && (
+        <div className="welcome-offer" onClick={() => setIsWelcomeOfferOpen(false)}>
+          <div
+            className="welcome-offer__dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Welcome offer"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              className="welcome-offer__close"
+              type="button"
+              aria-label="Close welcome offer"
+              onClick={() => setIsWelcomeOfferOpen(false)}
+            >
+              <X size={22} />
+            </button>
+            <img src={popupArtwork} alt="Diwali welcome promotion" />
+          </div>
+        </div>
+      )}
 
       {/* ══════════════════ HERO SECTION ══════════════════ */}
       <section className="hp-hero">
